@@ -2,6 +2,8 @@
 
 A full-stack social media platform built with Node.js, Express, and TypeScript. Create posts, comment, like, and connect with users in a modern, responsive interface.
 
+Built during field training at [AsalTech](https://asaltech.com/) under professional mentorship.
+
 **Live Demo:** [https://usersconnect.cloudomair.org/](https://usersconnect.cloudomair.org/)
 
 ## 📋 Table of Contents
@@ -87,7 +89,7 @@ A full-stack social media platform built with Node.js, Express, and TypeScript. 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/OmairSalman/UsersConnect
+   git clone https://github.com/OmairSalman/UsersConnect.git
    cd usersconnect
    ```
 
@@ -360,7 +362,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built as part of university field training requirements
+- Built during summer field training at **[AsalTech](https://asaltech.com/)** to fulfill university requirements
+- Special thanks to my backend development mentor at AsalTech for guidance and code reviews
 - Bootstrap team for the excellent CSS framework
 - TypeORM team for the robust ORM
 - All open-source contributors whose libraries made this possible
