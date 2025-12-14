@@ -380,7 +380,7 @@ If you encounter any issues or have questions:
 
 1. Check existing [Issues](https://github.com/OmairSalman/UsersConnect/issues)
 2. Create a new issue with detailed information
-3. Contact: admin@usersconnect.com
+3. Contact: OmairSalman@outlook.com
 
 ---
 
