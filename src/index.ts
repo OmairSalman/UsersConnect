@@ -36,22 +36,43 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-AppDataSource.initialize()
-  .then(() => {
-      console.log(`Data Source has been initialized! Connected successfully to mysql DB: ${process.env.DATABASE_NAME}`);
-  })
-  .catch((error) => {
-      console.error("Error during Data Source initialization:\n", error);
+// Database connection with retry logic
+async function connectWithRetry(retries = 10, delay = 5000): Promise<void> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await AppDataSource.initialize();
+      console.log(`✅ Data Source initialized! Connected to MySQL DB: ${process.env.DATABASE_NAME}`);
+      return;
+    } catch (error) {
+      const remainingRetries = retries - i - 1;
+      console.error(`❌ Database connection attempt ${i + 1}/${retries} failed.`);
+      
+      if (remainingRetries > 0) {
+        console.log(`⏳ Retrying in ${delay / 1000} seconds... (${remainingRetries} attempts remaining)`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        console.error("💥 Failed to connect to database after all retry attempts.");
+        console.error("Error details:", error);
+        process.exit(1);
+      }
+    }
+  }
+}
+
+async function startServer() {
+  await connectWithRetry();
+  
+  // Register routes
+  app.use('/', WebRouter);
+  app.use('/users', UserRouter);
+  app.use('/auth', AuthRouter);
+  app.use('/posts', PostRouter);
+  app.use('/comments', CommentRouter);
+  
+  // Start listening
+  app.listen(process.env.PORT, () => { 
+    console.log(`🚀 Server running at http://localhost:${process.env.PORT}/`);
   });
+}
 
-app.listen(process.env.PORT, async () => { console.log(`Server running at http://localhost:${process.env.PORT}/`) });
-
-app.use('/', WebRouter);
-
-app.use('/users', UserRouter);
-
-app.use('/auth', AuthRouter);
-
-app.use('/posts', PostRouter);
-
-app.use('/comments', CommentRouter);
+startServer();
