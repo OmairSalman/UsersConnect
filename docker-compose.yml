@@ -1,96 +1,42 @@
 version: '3.8'
 
 services:
-  # UsersConnect Application
   app:
     image: omairsalman/usersconnect:latest
-    container_name: usersconnect-app
     ports:
       - "3000:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
-      # IMPORTANT: Change these secrets to strong random values
-      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET:-change-this-to-a-random-secret}
-      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET:-change-this-to-another-random-secret}
-      # Database Configuration
+      - ACCESS_TOKEN_SECRET=your-access-secret-here
+      - REFRESH_TOKEN_SECRET=your-refresh-secret-here
       - DATABASE_HOST=mysql
-      - DATABASE_USERNAME=usersconnect
-      - DATABASE_PASSWORD=${MYSQL_PASSWORD:-userpassword}
+      - DATABASE_USERNAME=root
+      - DATABASE_PASSWORD=yourpassword
       - DATABASE_NAME=usersconnect
-      # Redis Configuration
       - REDIS_HOST=redis
-      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
-      # Optional
-      - GRAVATAR_API_KEY=${GRAVATAR_API_KEY:-}
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    restart: unless-stopped
-    networks:
-      - usersconnect-network
-
-  # MySQL Database
-  mysql:
-    image: mysql:8.0
-    container_name: usersconnect-mysql
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpassword}
-      - MYSQL_DATABASE=usersconnect
-      - MYSQL_USER=usersconnect
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-userpassword}
-    volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-    networks:
-      - usersconnect-network
-
-  # Redis Cache
-  redis:
-    image: redis:7-alpine
-    container_name: usersconnect-redis
-    command: redis-server --appendonly yes ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    restart: unless-stopped
-    networks:
-      - usersconnect-network
-
-# Optional: phpMyAdmin for database management
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: usersconnect-phpmyadmin
-    environment:
-      - PMA_HOST=mysql
-      - PMA_USER=root
-      - PMA_PASSWORD=${MYSQL_ROOT_PASSWORD:-rootpassword}
-    ports:
-      - "8080:80"
+      - REDIS_PASSWORD=
     depends_on:
       - mysql
+      - redis
     restart: unless-stopped
-    networks:
-      - usersconnect-network
-    profiles:
-      - tools  # Only starts if explicitly requested
+
+  mysql:
+    image: mysql:8
+    environment:
+      - MYSQL_ROOT_PASSWORD=yourpassword
+      - MYSQL_DATABASE=usersconnect
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
 volumes:
   mysql_data:
-    driver: local
   redis_data:
-    driver: local
-
-networks:
-  usersconnect-network:
-    driver: bridge
