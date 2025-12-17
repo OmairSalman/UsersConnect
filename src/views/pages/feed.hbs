@@ -5,7 +5,8 @@
 {{/if}}
 
 <div class="create-post-container">
-  <form action="/posts" method="POST" class="create-post-form">
+  {{! MODIFY FORM - Add enctype }}
+  <form action="/posts" method="POST" class="create-post-form" enctype="multipart/form-data">
     <div class="form-group">
       <label for="title">Title</label>
       <input 
@@ -30,7 +31,20 @@
       ></textarea>
     </div>
 
-  <button class="btn btn-primary" type="submit">Publish</button>
+    {{! ADD THIS NEW FIELD }}
+    <div class="form-group">
+      <label for="image">Image (optional)</label>
+      <input 
+        type="file" 
+        id="image" 
+        name="image" 
+        class="form-control" 
+        accept="image/*"
+      >
+      <small class="form-text text-muted">Max size: 5MB. Supported: JPG, PNG, GIF</small>
+    </div>
+
+    <button class="btn btn-primary" type="submit">Publish</button>
   </form>
 </div>
 
@@ -50,9 +64,8 @@
   {{/if}}
 </div>
 
-<!-- pagination UI (server can render numbers; JS will hook to them) -->
+<!-- pagination UI -->
 <nav id="pagination" aria-label="Page navigation" class="mt-3">
-  {{!-- optional server-side page links; you can render numeric pages or Prev/Next --}}
   {{#if (gt totalPages 1)}}
     <ul class="pagination justify-content-center">
       {{#if (gt page 1)}}

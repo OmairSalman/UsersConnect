@@ -2,6 +2,7 @@
   async function handleCreatePost(form) {
     const title = form.querySelector('input[name="title"]').value.trim();
     const content = form.querySelector('textarea[name="content"]').value.trim();
+    const imageInput = form.querySelector('input[name="image"]');
     const submitBtn = form.querySelector('button[type="submit"]');
 
     if (!title || !content) {
@@ -15,10 +16,17 @@
     submitBtn.textContent = "Posting...";
 
     try {
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('content', content);
+      
+      if (imageInput && imageInput.files && imageInput.files[0]) {
+        formData.append('image', imageInput.files[0]);
+      }
+
       const res = await fetch(form.action, {
         method: form.method.toUpperCase(),
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, content })
+        body: formData
       });
 
       const data = await res.json();
