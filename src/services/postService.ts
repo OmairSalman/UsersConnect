@@ -61,13 +61,14 @@ export default class PostService
         }
     }
 
-    async savePost(newPost: Post, authorId: string): Promise<PublicPost | null>
+    async savePost(newPost: Post & { imageURL?: string }, authorId: string): Promise<PublicPost | null>
     {
         try
         {
             const insertResult = await Post.insert({
                 title: newPost.title,
                 content: newPost.content,
+                imageURL: newPost.imageURL, // ADD THIS LINE
                 author_id: authorId
             });
             const keys = await redisClient.keys(`user:${authorId}:posts:page:*`);
