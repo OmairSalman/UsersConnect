@@ -29,6 +29,7 @@ export function postToPublic(post: Post): PublicPost {
     _id: post._id,
     title: post.title,
     content: post.content,
+    imageURL: post.imageURL,
     author: userToPublic(post.author),
     likes: post.likes.map(userToPublic),
     comments: (post.comments ?? [])
