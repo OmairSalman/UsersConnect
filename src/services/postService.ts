@@ -1,5 +1,5 @@
-import { Post } from "../models/postEntity";
-import { User } from "../models/userEntity";
+import { Post } from "../entities/postEntity";
+import { User } from "../entities/userEntity";
 import redisClient from "../config/redis";
 import { postToPublic } from "../utils/publicDTOs";
 import { PublicPost } from "../utils/publicTypes";

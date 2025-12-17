@@ -1,7 +1,7 @@
 import { DataSource } from "typeorm";
-import { User } from "../models/userEntity";
-import { Post } from "../models/postEntity";
-import { Comment } from "../models/commentEntity";
+import { User } from "../entities/userEntity";
+import { Post } from "../entities/postEntity";
+import { Comment } from "../entities/commentEntity";
 import 'dotenv/config';
 
 const AppDataSource = new DataSource({

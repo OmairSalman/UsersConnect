@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Post } from '../../models/postEntity';
+import { Post } from '../../entities/postEntity';
 
 export async function isPostAuthor(request: Request, response: Response, next: NextFunction)
 {

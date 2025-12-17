@@ -1,8 +1,8 @@
 import { UserPayload } from "../config/express";
 import redisClient from "../config/redis";
-import { Comment } from "../models/commentEntity";
-import { Post } from "../models/postEntity";
-import { User } from "../models/userEntity";
+import { Comment } from "../entities/commentEntity";
+import { Post } from "../entities/postEntity";
+import { User } from "../entities/userEntity";
 import { commentToPublic } from "../utils/publicDTOs";
 import { PublicComment } from "../utils/publicTypes";
 

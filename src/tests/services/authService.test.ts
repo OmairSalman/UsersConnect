@@ -1,5 +1,5 @@
 import AuthService from '../../services/authService';
-import { User } from '../../models/userEntity';
+import { User } from '../../entities/userEntity';
 import bcrypt from 'bcrypt';
 
 // Mock dependencies

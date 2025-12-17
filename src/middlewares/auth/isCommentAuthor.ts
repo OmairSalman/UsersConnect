@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Comment } from '../../models/commentEntity';
+import { Comment } from '../../entities/commentEntity';
 
 export async function isCommentAuthor(request: Request, response: Response, next: NextFunction)
 {

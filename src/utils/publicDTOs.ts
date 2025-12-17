@@ -1,6 +1,6 @@
-import { User } from "../models/userEntity";
-import { Comment } from "../models/commentEntity";
-import { Post } from "../models/postEntity";
+import { User } from "../entities/userEntity";
+import { Comment } from "../entities/commentEntity";
+import { Post } from "../entities/postEntity";
 import { PublicUser, PublicComment, PublicPost } from "./publicTypes";
 
 export function userToPublic(user: User): PublicUser {
