@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import PostService from "../../services/postService";
+import { S3Service } from "../../services/s3Service";
 
 const postService = new PostService();
 
@@ -25,7 +26,20 @@ export default class PostController
     async savePost(request: Request, response: Response)
     {
         let newPost = request.body;
-        newPost = await postService.savePost(newPost, request.user!._id);
+        let imageURL: string | undefined;
+
+        // Check if file was uploaded
+        if (request.file) {
+            try {
+                const s3Service = new S3Service();
+                imageURL = await s3Service.uploadPostImage(request.file, request.user!._id);
+            } catch (error) {
+                console.error('S3 upload error:', error);
+                return response.status(500).json({message: "Failed to upload image"});
+            }
+        }
+
+        newPost = await postService.savePost({ ...newPost, imageURL }, request.user!._id);
         response.status(201).json({message: "Post saved successfully", post: newPost});
     }
 
