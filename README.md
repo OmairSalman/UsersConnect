@@ -9,6 +9,9 @@ Built during field training at [AsalTech](https://asaltech.com/) under professio
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/omairsalman/usersconnect)](https://hub.docker.com/r/omairsalman/usersconnect)
+[![Docker Image Size](https://img.shields.io/docker/image-size/omairsalman/usersconnect/latest?label=image%20size)](https://hub.docker.com/r/omairsalman/usersconnect)
+[![GitHub Stars](https://img.shields.io/github/stars/OmairSalman/UsersConnect?style=social)](https://github.com/OmairSalman/UsersConnect/stargazers)
+[![Live Demo](https://img.shields.io/badge/demo-online-success?logo=google-chrome&logoColor=white)](https://usersconnect.cloudomair.org/)
 
 ---
 
