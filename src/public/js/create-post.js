@@ -47,14 +47,73 @@
     }
   }
 
+  function handleImagePreview(input) {
+    const preview = document.getElementById('image-preview');
+    const container = document.getElementById('image-preview-container');
+
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        container.style.display = 'block';
+      };
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      // No file selected, hide preview
+      container.style.display = 'none';
+      preview.src = '';
+    }
+  }
+
+  function removeImage() {
+    const imageInput = document.getElementById('image');
+    const preview = document.getElementById('image-preview');
+    const container = document.getElementById('image-preview-container');
+
+    // Clear the file input
+    imageInput.value = '';
+
+    // Hide preview
+    container.style.display = 'none';
+    preview.src = '';
+  }
+
   function init() {
     const form = document.querySelector(".create-post-form");
-    if (!form) return;
+    if (!form) {
+      console.log('[CREATE-POST] Form not found');
+      return;
+    }
+
+    console.log('[CREATE-POST] Form found, attaching handlers');
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       handleCreatePost(form);
     });
+
+    // Image preview handler
+    const imageInput = document.getElementById('image');
+    if (imageInput) {
+      console.log('[CREATE-POST] Image input found, attaching change handler');
+      imageInput.addEventListener('change', function() {
+        console.log('[CREATE-POST] Image selected:', this.files[0]?.name);
+        handleImagePreview(this);
+      });
+    } else {
+      console.log('[CREATE-POST] Image input NOT found');
+    }
+
+    // Remove image button handler
+    const removeBtn = document.getElementById('remove-image-btn');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', removeImage);
+    }
+
+    const preview = document.getElementById('image-preview');
+    console.log('[CREATE-POST] Image preview element:', preview ? 'FOUND' : 'NOT FOUND');
   }
 
   if (document.readyState === "loading") {

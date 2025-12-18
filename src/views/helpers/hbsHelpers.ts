@@ -33,6 +33,7 @@ const hbsHelpers =
     return false;
   },
   isOwner: (currentUserId: string, profileUserId: string) => profileUserId === currentUserId,
+  json: (context: any) => JSON.stringify(context),
 };
 
 export default hbsHelpers;

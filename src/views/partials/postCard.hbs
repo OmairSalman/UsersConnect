@@ -14,18 +14,24 @@
         <h5 class="post-title mb-1">{{post.title}}</h5>
         
         {{#if post.imageURL}}
-          <img src="{{post.imageURL}}" 
-               alt="Post image" 
-               class="img-fluid rounded mb-3 post-image" 
+          <img src="{{post.imageURL}}"
+               alt="Post image"
+               class="img-fluid rounded mb-3 post-image"
                style="max-width: 100%; height: auto; max-height: 500px; object-fit: cover;">
         {{/if}}
-        
-        <p class="post-content mb-3">{{post.content}}</p>
+
+<p class="post-content mb-3">{{~post.content~}}</p>
       </div>
 
       <form class="edit-post-form" style="display:none;">
-        <input type="text" class="edit-post-title form-control" value="{{post.title}}" maxlength="100" required>
+        <input type="text"
+              class="edit-post-title form-control"
+              value="{{post.title}}"
+              maxlength="100"
+              required>
+
         <textarea class="edit-post-textarea form-control" required>{{post.content}}</textarea>
+
         <div class="edit-btn-row d-flex gap-2 mt-2">
           <button type="submit" class="btn btn-primary btn-sm">Save</button>
           <button type="button" class="btn btn-danger btn-sm cancel-edit-post-btn">Cancel</button>

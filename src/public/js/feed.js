@@ -267,10 +267,24 @@ async function handleEditComment(form)
       {
         const btn = e.target.closest('.edit-post-btn');
         const postCard = btn.closest('.post-card');
+        const form = postCard.querySelector('.edit-post-form');
+        const textarea = form.querySelector('.edit-post-textarea');
+
+        // Get content from the displayed post (which has the clean content)
+        const postContentElement = postCard.querySelector('.post-content');
+        const raw = postContentElement ? postContentElement.textContent : '';
+
+        const normalized = raw
+          .split('\n')
+          .map(line => line.trimStart())
+          .join('\n');
+
+        textarea.value = normalized;
+
         postCard.querySelector('.post-actions-rail').querySelector('.edit-post-btn').style.display = 'none';
         postCard.querySelector('.post-content-view').style.display = 'none';
-        postCard.querySelector('.edit-post-form').style.display = '';
-        postCard.querySelector('.edit-post-textarea').focus();
+        form.style.display = '';
+        textarea.focus();
       }
 
       // --- Cancel Edit Post ---
