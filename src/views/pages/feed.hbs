@@ -5,7 +5,6 @@
 {{/if}}
 
 <div class="create-post-container">
-  {{! MODIFY FORM - Add enctype }}
   <form action="/posts" method="POST" class="create-post-form" enctype="multipart/form-data">
     <div class="form-group">
       <label for="title">Title</label>
@@ -31,7 +30,7 @@
       ></textarea>
     </div>
 
-    {{! ADD THIS NEW FIELD }}
+    {{#if s3Enabled}}
     <div class="form-group">
       <label for="image">Image (optional)</label>
       <input
@@ -49,6 +48,7 @@
         </button>
       </div>
     </div>
+    {{/if}}
 
     <button class="btn btn-primary" type="submit">Publish</button>
   </form>
@@ -60,7 +60,7 @@
   data-total-pages="{{totalPages}}">
   {{#if posts.length}}
     {{#each posts}}
-      {{> postCard post=this currentUser=../currentUser}}
+      {{> postCard post=this currentUser=../currentUser s3Enabled=../s3Enabled}}
     {{/each}}
   {{else}}
     <div class="feed-empty-message d-flex flex-column justify-content-center align-items-center" style="min-height: 60vh;">

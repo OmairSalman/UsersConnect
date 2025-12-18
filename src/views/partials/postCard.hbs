@@ -32,6 +32,7 @@
 
         <textarea class="edit-post-textarea form-control" required>{{post.content}}</textarea>
 
+        {{#if s3Enabled}}
         <!-- Image editing section -->
         <div class="mt-2">
           {{#if post.imageURL}}
@@ -65,6 +66,7 @@
             </div>
           </div>
         </div>
+        {{/if}}
 
         <div class="edit-btn-row d-flex gap-2 mt-2">
           <button type="submit" class="btn btn-primary btn-sm">Save</button>

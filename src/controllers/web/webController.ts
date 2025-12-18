@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { UserPayload, RefreshPayload } from "../../config/express";
 import crypto from 'crypto';
 import { Post } from "../../entities/postEntity";
+import { isS3Configured } from "../../utils/s3Config";
 
 const postService = new PostService();
 const commentService = new CommentService();
@@ -37,7 +38,16 @@ export default class WebController
             const posts = await postService.getPosts(page, 10);
             const postsCount = await Post.count();
             const totalPages = Math.ceil(postsCount/10);
-            response.render('pages/feed', {currentUser: request.user, currentUserId: request.user._id, posts: posts, page: page, limit: 10, totalPages: totalPages });
+            const s3Enabled = isS3Configured();
+            response.render('pages/feed', {
+                currentUser: request.user, 
+                currentUserId: request.user._id, 
+                posts: posts, 
+                page: page, 
+                limit: 10, 
+                totalPages: totalPages,
+                s3Enabled: s3Enabled
+            });
         }
     }
 
@@ -67,12 +77,14 @@ export default class WebController
 
     create(request: Request, response: Response)
     {
-        response.render('pages/createPost', {currentUser: request.user});
+        const s3Enabled = isS3Configured();
+        response.render('pages/createPost', {currentUser: request.user, s3Enabled: s3Enabled});
     }
 
     async profile(request: Request, response: Response)
     {
         const user = request.user;
+        const s3Enabled = isS3Configured();
         let posts;
         if(user)
         {
@@ -88,7 +100,18 @@ export default class WebController
                 const totalPages = Math.ceil(postsCount/10);
                 const postsLikes = await postService.countUserPostsLikes(user._id.toString());
                 const commentsLikes = await commentService.countUserCommentsLikes(user._id.toString());
-                response.render('pages/profile', {user: user, currentUser: user, hasCustomAvatar: res.status !== 404, posts: posts, postsLikes: postsLikes, commentsLikes: commentsLikes, postsPage: page, limit: 10, totalPages: totalPages });
+                response.render('pages/profile', {
+                    user: user, 
+                    currentUser: user, 
+                    hasCustomAvatar: res.status !== 404, 
+                    posts: posts, 
+                    postsLikes: postsLikes, 
+                    commentsLikes: commentsLikes, 
+                    postsPage: page, 
+                    limit: 10, 
+                    totalPages: totalPages,
+                    s3Enabled: s3Enabled
+                });
             }
         }
     }
@@ -98,6 +121,7 @@ export default class WebController
         const currentUser = request.user;
         const userId = request.params.userId;
         const page = parseInt(request.query.postsPage as string) || 1;
+        const s3Enabled = isS3Configured();
         const user = await userService.getUserById(userId);
         if(user)
         {
@@ -112,7 +136,18 @@ export default class WebController
                 const totalPages = Math.ceil(postsCount/10);
                 const postsLikes = await postService.countUserPostsLikes(userId.toString());
                 const commentsLikes = await commentService.countUserCommentsLikes(userId.toString());
-                response.render('pages/profile', {user: user, currentUser: currentUser, hasCustomAvatar: res.status !== 404, posts: posts, postsLikes: postsLikes, commentsLikes: commentsLikes, postsPage: page, limit: 10, totalPages: totalPages });
+                response.render('pages/profile', {
+                    user: user, 
+                    currentUser: currentUser, 
+                    hasCustomAvatar: res.status !== 404, 
+                    posts: posts, 
+                    postsLikes: postsLikes, 
+                    commentsLikes: commentsLikes, 
+                    postsPage: page, 
+                    limit: 10, 
+                    totalPages: totalPages,
+                    s3Enabled: s3Enabled
+                });
             }
         }
     }

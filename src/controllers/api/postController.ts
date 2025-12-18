@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import PostService from "../../services/postService";
 import { S3Service } from "../../services/s3Service";
+import { isS3Configured } from "../../utils/s3Config";
 
 const postService = new PostService();
 
@@ -28,8 +29,8 @@ export default class PostController
         let newPost = request.body;
         let imageURL: string | undefined;
 
-        // Check if file was uploaded
-        if (request.file) {
+        // Check if S3 is configured and file was uploaded
+        if (isS3Configured() && request.file) {
             try {
                 const s3Service = new S3Service();
                 imageURL = await s3Service.uploadPostImage(request.file, request.user!._id);
@@ -37,6 +38,9 @@ export default class PostController
                 console.error('S3 upload error:', error);
                 return response.status(500).json({message: "Failed to upload image"});
             }
+        } else if (request.file && !isS3Configured()) {
+            // User tried to upload but S3 is not configured
+            return response.status(400).json({message: "Image uploads are not enabled on this server"});
         }
 
         newPost = await postService.savePost({ ...newPost, imageURL }, request.user!._id);
@@ -49,19 +53,25 @@ export default class PostController
         let post = request.body;
         let imageURL: string | undefined | null = undefined;
 
-        // Check if user wants to remove the image
-        if (request.body.removeImage === 'true') {
-            imageURL = null; // null means remove the image
-        }
-        // Check if a new image was uploaded
-        else if (request.file) {
-            try {
-                const s3Service = new S3Service();
-                imageURL = await s3Service.uploadPostImage(request.file, request.user!._id);
-            } catch (error) {
-                console.error('S3 upload error:', error);
-                return response.status(500).json({message: "Failed to upload image"});
+        // Only handle images if S3 is configured
+        if (isS3Configured()) {
+            // Check if user wants to remove the image
+            if (request.body.removeImage === 'true') {
+                imageURL = null; // null means remove the image
             }
+            // Check if a new image was uploaded
+            else if (request.file) {
+                try {
+                    const s3Service = new S3Service();
+                    imageURL = await s3Service.uploadPostImage(request.file, request.user!._id);
+                } catch (error) {
+                    console.error('S3 upload error:', error);
+                    return response.status(500).json({message: "Failed to upload image"});
+                }
+            }
+        } else if (request.file && !isS3Configured()) {
+            // User tried to upload but S3 is not configured
+            return response.status(400).json({message: "Image uploads are not enabled on this server"});
         }
 
         const updatedPost = await postService.updatePost(postId, post, imageURL);

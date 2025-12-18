@@ -6,10 +6,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
+      - NODE_ENV=production
       - PORT=3000
-      - ACCESS_TOKEN_SECRET=your-access-secret-here
-      - REFRESH_TOKEN_SECRET=your-refresh-secret-here
+      # Generate secrets with: openssl rand -hex 32
+      - ACCESS_TOKEN_SECRET=change-this-to-random-secret-min-32-chars
+      - REFRESH_TOKEN_SECRET=change-this-to-random-secret-min-32-chars
       - DATABASE_HOST=mysql
       - DATABASE_USERNAME=root
       - DATABASE_PASSWORD=yourpassword
