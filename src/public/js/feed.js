@@ -263,15 +263,29 @@ async function handleEditComment(form)
       }
 
       // --- Edit Post ---
+      // --- Edit Post ---
       if (e.target.closest('button.edit-post-btn'))
       {
         const btn = e.target.closest('.edit-post-btn');
         const postCard = btn.closest('.post-card');
+        const textarea = postCard.querySelector('.edit-post-textarea');
+        const postContentElement = postCard.querySelector('.post-content');
+      
+        // Read displayed content and normalize indentation
+        const raw = postContentElement ? postContentElement.textContent : '';
+        const normalized = raw
+          .split('\n')
+          .map(line => line.trimStart())
+          .join('\n');
+      
+        textarea.value = normalized;
+      
         postCard.querySelector('.post-actions-rail').querySelector('.edit-post-btn').style.display = 'none';
         postCard.querySelector('.post-content-view').style.display = 'none';
         postCard.querySelector('.edit-post-form').style.display = '';
-        postCard.querySelector('.edit-post-textarea').focus();
+        textarea.focus();
       }
+  
 
       // --- Cancel Edit Post ---
       if (e.target.closest('.cancel-edit-post-btn')) {
