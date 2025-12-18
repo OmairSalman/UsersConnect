@@ -14,7 +14,9 @@ export class Post extends BaseEntity
   @Column("text")
   content!: string
 
-  // Foreign key column for author
+  @Column({ nullable: true })
+  imageURL?: string
+  
   @Column()
   author_id!: string
 

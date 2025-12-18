@@ -1,4 +1,4 @@
-import { User } from "../models/userEntity";
+import { User } from "../entities/userEntity";
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { PublicUser } from "../utils/publicTypes";

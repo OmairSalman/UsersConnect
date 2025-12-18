@@ -5,7 +5,7 @@ import UserService from "../../services/userService";
 import jwt from 'jsonwebtoken';
 import { UserPayload, RefreshPayload } from "../../config/express";
 import crypto from 'crypto';
-import { Post } from "../../models/postEntity";
+import { Post } from "../../entities/postEntity";
 
 const postService = new PostService();
 const commentService = new CommentService();

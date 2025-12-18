@@ -162,7 +162,16 @@ async function handleDeleteComment(button)
 async function handleDeletePost(button)
 {
   const postId = button.dataset.postId;
-  const confirmed = await customConfirm('Are you sure you want to delete this post? This action cannot be undone!');
+  const postCard = button.closest('.post-card');
+  const hasImage = postCard.querySelector('.post-image') !== null;
+
+  let message = 'Are you sure you want to delete this post?';
+  if (hasImage) {
+    message += ' The attached image will also be permanently deleted.';
+  }
+  message += ' This action cannot be undone!';
+
+  const confirmed = await customConfirm(message);
   if (confirmed)
   {
     const res = await fetch(`/posts/${postId}`, { method: 'DELETE' });
@@ -179,23 +188,32 @@ async function handleDeletePost(button)
 
 async function handleEditPost(form)
 {
-  const postCard = form.closest('.post-card');
-  const postId = postCard.querySelector('.edit-post-btn').dataset.postId;
+  const postId = form.dataset.postId;
   const title = form.querySelector('.edit-post-title').value.trim();
   const newContent = form.querySelector('.edit-post-textarea').value.trim();
+  const imageInput = form.querySelector('.edit-post-image');
+  const removeImageFlag = form.dataset.removeImage === 'true';
+
+  const formData = new FormData();
+  formData.append('title', title);
+  formData.append('content', newContent);
+
+  // If user selected a new image, add it
+  if (imageInput && imageInput.files && imageInput.files[0]) {
+    formData.append('image', imageInput.files[0]);
+  } else if (removeImageFlag) {
+    // If user removed the image, send a flag
+    formData.append('removeImage', 'true');
+  }
 
   const res = await fetch(`/posts/${postId}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: title, content: newContent })
+    body: formData
   });
 
   if (res.ok) {
-    postCard.querySelector('.post-content-view').querySelector('.post-title').textContent = title;
-    postCard.querySelector('.post-content-view').querySelector('.post-content').textContent = newContent;
-    form.style.display = 'none';
-    postCard.querySelector('.post-actions-rail').querySelector('.edit-post-btn').style.display = '';
-    postCard.querySelector('.post-content-view').style.display = '';
+    // Reload to show updated content and image
+    window.location.reload();
   } else {
     alert('Failed to update post.');
   }
@@ -224,12 +242,46 @@ async function handleEditComment(form)
 }
 
   async function init() {
+    // Auto-resize for comment input textareas
     document.querySelectorAll(".comment-form textarea").forEach(textarea => {
       textarea.addEventListener("input", () => {
         textarea.style.height = "auto"; // reset
         textarea.style.height = textarea.scrollHeight + "px"; // adjust
       });
     });
+
+    // Auto-resize for edit textareas (posts and comments)
+    document.body.addEventListener('input', (e) => {
+      if (e.target.matches('.edit-post-textarea') || e.target.matches('.edit-comment-textarea')) {
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+      }
+    });
+
+    // Handle image preview for post editing
+    document.body.addEventListener('change', (e) => {
+      if (e.target.matches('.edit-post-image')) {
+        const input = e.target;
+        const form = input.closest('.edit-post-form');
+        const previewContainer = form.querySelector('.new-image-preview-container');
+        const previewImg = form.querySelector('.new-image-preview');
+
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            previewImg.src = event.target.result;
+            previewContainer.style.display = 'block';
+            // If showing new image, keep current image visible too (unless it was removed)
+            // User can see both old and new
+          };
+          reader.readAsDataURL(input.files[0]);
+        } else {
+          previewContainer.style.display = 'none';
+          previewImg.src = '';
+        }
+      }
+    });
+
     // Make sure feed exists
     const feed = document.getElementById('feed-container');
     if (!feed) return;
@@ -268,21 +320,29 @@ async function handleEditComment(form)
       {
         const btn = e.target.closest('.edit-post-btn');
         const postCard = btn.closest('.post-card');
-        const textarea = postCard.querySelector('.edit-post-textarea');
+        const form = postCard.querySelector('.edit-post-form');
+        const textarea = form.querySelector('.edit-post-textarea');
+
+        // Get content from the displayed post (which has the clean content)
         const postContentElement = postCard.querySelector('.post-content');
-      
-        // Read displayed content and normalize indentation
         const raw = postContentElement ? postContentElement.textContent : '';
+
         const normalized = raw
           .split('\n')
           .map(line => line.trimStart())
           .join('\n');
-      
+
         textarea.value = normalized;
-      
+
+        // Show form FIRST so textarea has layout for scrollHeight calculation
         postCard.querySelector('.post-actions-rail').querySelector('.edit-post-btn').style.display = 'none';
         postCard.querySelector('.post-content-view').style.display = 'none';
-        postCard.querySelector('.edit-post-form').style.display = '';
+        form.style.display = '';
+
+        // NOW auto-resize textarea to fit content (after it's visible)
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+
         textarea.focus();
       }
   
@@ -290,20 +350,67 @@ async function handleEditComment(form)
       // --- Cancel Edit Post ---
       if (e.target.closest('.cancel-edit-post-btn')) {
         const postCard = e.target.closest('.post-card');
+        const form = postCard.querySelector('.edit-post-form');
+
+        // Reset image editing state
+        form.dataset.removeImage = 'false';
+        const imageInput = form.querySelector('.edit-post-image');
+        if (imageInput) imageInput.value = '';
+        const newImagePreviewContainer = form.querySelector('.new-image-preview-container');
+        if (newImagePreviewContainer) newImagePreviewContainer.style.display = 'none';
+        const currentImageContainer = form.querySelector('.current-image-container');
+        if (currentImageContainer) currentImageContainer.style.display = '';
+
         postCard.querySelector('.edit-post-form').style.display = 'none';
         postCard.querySelector('.post-actions-rail').querySelector('.edit-post-btn').style.display = '';
         postCard.querySelector('.post-content-view').style.display = '';
+      }
+
+      // --- Remove Current Image from Post ---
+      if (e.target.closest('.remove-current-image-btn')) {
+        const form = e.target.closest('.edit-post-form');
+        form.dataset.removeImage = 'true';
+        const currentImageContainer = form.querySelector('.current-image-container');
+        if (currentImageContainer) currentImageContainer.style.display = 'none';
+      }
+
+      // --- Remove New Image Preview from Post ---
+      if (e.target.closest('.remove-new-image-btn')) {
+        const form = e.target.closest('.edit-post-form');
+        const imageInput = form.querySelector('.edit-post-image');
+        if (imageInput) imageInput.value = '';
+        const newImagePreviewContainer = form.querySelector('.new-image-preview-container');
+        if (newImagePreviewContainer) newImagePreviewContainer.style.display = 'none';
       }
 
       // --- Edit Comment ---
       if (e.target.closest('button.edit-comment-btn')) {
         const btn = e.target.closest('.edit-comment-btn');
         const commentCard = btn.closest('.comment-wrapper');
+        const textarea = commentCard.querySelector('.edit-comment-textarea');
+
+        const commentContentElement = commentCard.querySelector('.comment-content');
+        const raw = commentContentElement ? commentContentElement.textContent : '';
+
+        const normalized = raw
+          .split('\n')
+          .map(line => line.trimStart())
+          .join('\n');
+
+        textarea.value = normalized;
+
+        // Show form FIRST so textarea has layout
         commentCard.querySelector('.comment-actions').style.setProperty('display', 'none', 'important');
         commentCard.querySelector('.comment-bubble').style.display = 'none';
         commentCard.querySelector('.edit-comment-form').style.display = '';
-        commentCard.querySelector('.edit-comment-textarea').focus();
+
+        // Auto-resize AFTER visible
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+
+        textarea.focus();
       }
+
 
       // --- Cancel Edit Comment ---
       if (e.target.closest('.cancel-edit-comment-btn')) {

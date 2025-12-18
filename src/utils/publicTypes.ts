@@ -19,6 +19,7 @@ export type PublicPost = {
   _id: string;
   title: string;
   content: string;
+  imageURL?: string;
   author: Omit<PublicUser, "email">;
   likes: Omit<PublicUser, "email">[];
   comments: PublicComment[];

@@ -12,12 +12,60 @@
               height="32">{{post.author.name}}</a>, {{fromNow post.createdAt}}
         </div>
         <h5 class="post-title mb-1">{{post.title}}</h5>
-        <p class="post-content mb-3">{{post.content}}</p>
+        
+        {{#if post.imageURL}}
+          <img src="{{post.imageURL}}"
+               alt="Post image"
+               class="img-fluid rounded mb-3 post-image"
+               style="max-width: 100%; height: auto; max-height: 500px; object-fit: cover;">
+        {{/if}}
+
+<p class="post-content mb-3">{{~post.content~}}</p>
       </div>
 
-      <form class="edit-post-form" style="display:none;">
-        <input type="text" class="edit-post-title form-control" value="{{post.title}}" maxlength="100" required>
+      <form class="edit-post-form" style="display:none;" data-post-id="{{post._id}}" data-current-image="{{post.imageURL}}">
+        <input type="text"
+              class="edit-post-title form-control"
+              value="{{post.title}}"
+              maxlength="100"
+              required>
+
         <textarea class="edit-post-textarea form-control" required>{{post.content}}</textarea>
+
+        <!-- Image editing section -->
+        <div class="mt-2">
+          {{#if post.imageURL}}
+            <div class="current-image-container mb-2">
+              <label class="form-label small text-muted">Current Image:</label>
+              <div class="position-relative d-inline-block">
+                <img src="{{post.imageURL}}" alt="Current post image" class="img-thumbnail" style="max-height: 150px;">
+                <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 remove-current-image-btn" title="Remove image">
+                  <i class="fa-solid fa-times"></i>
+                </button>
+              </div>
+            </div>
+          {{/if}}
+
+          <div class="mb-2">
+            <label for="edit-image-{{post._id}}" class="form-label small">{{#if post.imageURL}}Change Image{{else}}Add Image{{/if}} (optional):</label>
+            <input type="file"
+                   class="form-control form-control-sm edit-post-image"
+                   id="edit-image-{{post._id}}"
+                   accept="image/*">
+          </div>
+
+          <!-- New image preview -->
+          <div class="new-image-preview-container" style="display:none;">
+            <label class="form-label small text-muted">New Image Preview:</label>
+            <div class="position-relative d-inline-block">
+              <img src="" alt="New image preview" class="new-image-preview img-thumbnail" style="max-height: 150px;">
+              <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 remove-new-image-btn" title="Remove">
+                <i class="fa-solid fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div class="edit-btn-row d-flex gap-2 mt-2">
           <button type="submit" class="btn btn-primary btn-sm">Save</button>
           <button type="button" class="btn btn-danger btn-sm cancel-edit-post-btn">Cancel</button>

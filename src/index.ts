@@ -21,7 +21,7 @@ const app = express();
 
 app.engine('hbs', engine({
   extname: '.hbs',
-  defaultLayout: 'main', 
+  defaultLayout: 'main',
   layoutsDir: path.join(__dirname, 'views/layouts'),
   partialsDir: path.join(__dirname, 'views/partials'),
   helpers: hbsHelpers
@@ -29,6 +29,11 @@ app.engine('hbs', engine({
 
 app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Disable view caching in development
+if (process.env.NODE_ENV !== 'production') {
+  app.disable('view cache');
+}
 
 app.use(express.static(__dirname + '/public'));
 

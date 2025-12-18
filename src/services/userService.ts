@@ -1,4 +1,4 @@
-import { User } from "../models/userEntity";
+import { User } from "../entities/userEntity";
 import crypto from 'crypto';
 import { PublicUser } from "../utils/publicTypes";
 import { userToPublic } from "../utils/publicDTOs";

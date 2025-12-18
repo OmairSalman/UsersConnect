@@ -1,6 +1,6 @@
-import { User } from "../models/userEntity";
-import { Comment } from "../models/commentEntity";
-import { Post } from "../models/postEntity";
+import { User } from "../entities/userEntity";
+import { Comment } from "../entities/commentEntity";
+import { Post } from "../entities/postEntity";
 import { PublicUser, PublicComment, PublicPost } from "./publicTypes";
 
 export function userToPublic(user: User): PublicUser {
@@ -29,6 +29,7 @@ export function postToPublic(post: Post): PublicPost {
     _id: post._id,
     title: post.title,
     content: post.content,
+    imageURL: post.imageURL,
     author: userToPublic(post.author),
     likes: post.likes.map(userToPublic),
     comments: (post.comments ?? [])

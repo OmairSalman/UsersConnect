@@ -610,7 +610,6 @@ footer a:hover {
 /* Post creation page */
 .create-post-container {
   max-width: 600px;
-  max-height: 400px;
   margin: 2rem auto;
   background: #fff;
   padding: 2rem;
@@ -635,16 +634,26 @@ footer a:hover {
   font-weight: 500;
 }
 
-.form-input,
-.form-textarea {
+.form-input {
   width: 100%;
-  max-height: 75px;
   padding: 0.75rem 1rem;
   border: 1px solid #ccc;
   border-radius: 0.75rem;
   font-size: 1rem;
   outline: none;
   transition: border-color 0.2s ease;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s ease;
+  resize: vertical;
 }
 
 .form-input:focus,
@@ -1190,3 +1199,48 @@ footer a:hover {
 .admin-toggle-btn-wide {
   min-width: 150px;
 }
+
+/* ============================
+   POST IMAGES
+   ============================ */
+   .post-image {
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .post-image:hover {
+    transform: scale(1.02);
+  }
+  
+  /* Image preview in create post form */
+  #image-preview {
+    max-width: 100%;
+    max-height: 400px;
+    width: auto;
+    height: auto;
+    border-radius: 8px;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    object-fit: contain;
+  }
+
+  /* File input styling */
+  input[type="file"].form-input {
+    padding: 0.5rem;
+    border: 2px dashed #ccc;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  input[type="file"].form-input:hover {
+    border-color: #007bff;
+    background: #e9f5ff;
+  }
+
+  input[type="file"].form-input:focus {
+    border-color: #007bff;
+    border-style: solid;
+  }
