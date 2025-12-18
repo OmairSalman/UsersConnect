@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 
 export class S3Service {
@@ -9,24 +9,24 @@ export class S3Service {
   constructor() {
     const endpoint = process.env.S3_ENDPOINT;
     const region = process.env.S3_REGION || "us-east-1";
-    
+
     this.s3Client = new S3Client({
       region: region,
       credentials: {
         accessKeyId: process.env.S3_ACCESS_KEY!,
         secretAccessKey: process.env.S3_SECRET_KEY!,
       },
-      ...(endpoint && { 
+      ...(endpoint && {
         endpoint: endpoint,
         forcePathStyle: true,
       }),
     });
-    
+
     this.bucketName = process.env.S3_BUCKET_NAME!;
-    
-    this.publicUrl = process.env.S3_PUBLIC_URL || 
-      (endpoint 
-        ? `${endpoint}/${this.bucketName}` 
+
+    this.publicUrl = process.env.S3_PUBLIC_URL ||
+      (endpoint
+        ? `${endpoint}/${this.bucketName}`
         : `https://${this.bucketName}.s3.${region}.amazonaws.com`);
   }
 
@@ -42,7 +42,34 @@ export class S3Service {
     });
 
     await this.s3Client.send(command);
-    
+
     return `${this.publicUrl}/${fileName}`;
+  }
+
+  async deletePostImage(imageURL: string): Promise<void> {
+    try {
+      // Extract the key from the URL
+      // URL format: https://bucket.s3.region.amazonaws.com/posts/userid-hash.ext
+      // or: https://endpoint/bucket/posts/userid-hash.ext
+      const url = new URL(imageURL);
+      let key = url.pathname;
+
+      // Remove leading slash and bucket name if present in path
+      key = key.replace(/^\//, '');
+      if (key.startsWith(this.bucketName + '/')) {
+        key = key.substring(this.bucketName.length + 1);
+      }
+
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+      });
+
+      await this.s3Client.send(command);
+      console.log(`Deleted image from S3: ${key}`);
+    } catch (error) {
+      console.error('Error deleting image from S3:', error);
+      // Don't throw - we don't want to fail the whole operation if S3 delete fails
+    }
   }
 }

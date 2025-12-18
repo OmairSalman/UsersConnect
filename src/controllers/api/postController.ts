@@ -47,7 +47,24 @@ export default class PostController
     {
         let postId = request.params.postId;
         let post = request.body;
-        const updatedPost = await postService.updatePost(postId, post);
+        let imageURL: string | undefined | null = undefined;
+
+        // Check if user wants to remove the image
+        if (request.body.removeImage === 'true') {
+            imageURL = null; // null means remove the image
+        }
+        // Check if a new image was uploaded
+        else if (request.file) {
+            try {
+                const s3Service = new S3Service();
+                imageURL = await s3Service.uploadPostImage(request.file, request.user!._id);
+            } catch (error) {
+                console.error('S3 upload error:', error);
+                return response.status(500).json({message: "Failed to upload image"});
+            }
+        }
+
+        const updatedPost = await postService.updatePost(postId, post, imageURL);
         if(!updatedPost) return response.status(404).send("Post not found");
         return response.status(200).json({message: "Post update successfully", post: updatedPost});
     }

@@ -4,6 +4,7 @@ import redisClient from "../config/redis";
 import { postToPublic } from "../utils/publicDTOs";
 import { PublicPost } from "../utils/publicTypes";
 import { UserPayload } from "../config/express";
+import { S3Service } from "./s3Service";
 
 export default class PostService
 {
@@ -87,17 +88,49 @@ export default class PostService
         }
     }
 
-    async updatePost(postId: string, updatedPost: Post): Promise<PublicPost | null>
+    async updatePost(postId: string, updatedPost: Post, imageURL?: string | null): Promise<PublicPost | null>
     {
         try
         {
-            await Post.update({ _id: postId }, updatedPost);
+            // Get the current post to check if we need to delete an old image
+            const currentPost = await Post.findOneBy({ _id: postId });
+            if(!currentPost) return null;
+
+            const oldImageURL = currentPost.imageURL;
+
+            // Prepare update data
+            const updateData: any = {
+                title: updatedPost.title,
+                content: updatedPost.content,
+            };
+
+            // Handle image updates
+            if (imageURL === null) {
+                // User wants to remove the image
+                updateData.imageURL = null;
+                // Delete old image from S3 if it exists
+                if (oldImageURL) {
+                    const s3Service = new S3Service();
+                    await s3Service.deletePostImage(oldImageURL);
+                }
+            } else if (imageURL !== undefined) {
+                // User uploaded a new image
+                updateData.imageURL = imageURL;
+                // Delete old image from S3 if it exists
+                if (oldImageURL) {
+                    const s3Service = new S3Service();
+                    await s3Service.deletePostImage(oldImageURL);
+                }
+            }
+            // If imageURL is undefined, don't change the image
+
+            await Post.update({ _id: postId }, updateData);
             const post = await Post.findOneBy({ _id: postId });
             if(!post) return null;
 
             const keys = await redisClient.keys(`user:${post.author._id}:posts:page:*`);
             if (keys.length) await redisClient.del(keys);
-            const res = await redisClient.del('feed:page:1');
+            await redisClient.del('feed:page:1');
 
             const safePost = postToPublic(post);
             return safePost;
@@ -116,11 +149,18 @@ export default class PostService
         {
             const post = await Post.findOne({ where: {_id: postId } });
             if(!post) return null;
+
+            // Delete image from S3 if it exists
+            if (post.imageURL) {
+                const s3Service = new S3Service();
+                await s3Service.deletePostImage(post.imageURL);
+            }
+
             await post.remove();
             for (const comment of post.comments) {
                 await redisClient.del(`user:${comment.author._id}:comments:likes:count`);
             }
-            
+
             const keys = await redisClient.keys(`user:${post.author._id}:posts:*`);
             if (keys.length) await redisClient.del(keys);
 

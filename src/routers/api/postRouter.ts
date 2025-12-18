@@ -29,7 +29,7 @@ PostRouter.get('/:postId', postController.getPost);
 
 PostRouter.post('/', upload.single('image'), PostValidator, postController.savePost);
 
-PostRouter.put('/:postId', isPostAuthor, PostValidator, postController.updatePost);
+PostRouter.put('/:postId', isPostAuthor, upload.single('image'), PostValidator, postController.updatePost);
 
 PostRouter.delete('/:postId', isPostAuthor, postController.deletePost);
 
