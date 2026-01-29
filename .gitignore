@@ -73,3 +73,5 @@ temp/
 # pnpm-lock.yaml
 
 dist/
+
+/.claude
