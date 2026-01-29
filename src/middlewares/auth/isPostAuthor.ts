@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { Post } from '../../entities/postEntity';
+import { asString } from '../../utils/asString';
 
 export async function isPostAuthor(request: Request, response: Response, next: NextFunction)
 {
     const user = request.user!;
-    const postId = request.params.postId;
+    const postId = asString(request.params.postId)!;
     
     const post = await Post.findOneBy({_id: postId});
     if(!post)

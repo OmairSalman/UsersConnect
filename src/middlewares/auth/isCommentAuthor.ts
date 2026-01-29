@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { Comment } from '../../entities/commentEntity';
+import { asString } from '../../utils/asString';
 
 export async function isCommentAuthor(request: Request, response: Response, next: NextFunction)
 {
     const user = request.user!;
-    const commentId = request.params.commentId;
+    const commentId = asString(request.params.commentId)!;
 
     const comment = await Comment.findOneBy({_id: commentId});
     if(!comment)

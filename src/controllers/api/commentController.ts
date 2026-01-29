@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import CommentService from "../../services/commentService";
+import { asString } from "../../utils/asString";
 
 const commentService = new CommentService();
 
@@ -7,7 +8,7 @@ export default class CommentController
 {
     async saveComment(request: Request, response: Response)
     {
-        const postId = request.params.postId;
+        const postId = asString(request.params.postId)!;
         const comment = request.body;
         const savedComment = await commentService.saveComment(postId, comment, request.user!._id);
         
@@ -23,7 +24,7 @@ export default class CommentController
 
     async updateComment(request: Request, response: Response)
     {
-        let commentId = request.params.commentId;
+        let commentId = asString(request.params.commentId)!;
         const comment = request.body;
         const updatedComment = await commentService.updateComment(commentId, comment);
         if(!updatedComment) return response.status(404).send("Comment not found");
@@ -32,7 +33,7 @@ export default class CommentController
 
     async deleteComment(request: Request, response: Response)
     {
-        let commentId = request.params.commentId;
+        let commentId = asString(request.params.commentId)!;
         const deletedComment = await commentService.deleteComment(commentId);
         if(!deletedComment) return response.status(404).send("Comment not found");
         return response.status(200).json({message: "Comment deleted successfully", comment: deletedComment});
@@ -40,7 +41,7 @@ export default class CommentController
 
     async like(request: Request, response: Response)
     {
-        let commentId = request.params.commentId;
+        let commentId = asString(request.params.commentId)!;
         let user = request.user!;
         const likedComment = await commentService.like(commentId, user);
         if(!likedComment) return response.status(404).send("Comment not found");
@@ -49,7 +50,7 @@ export default class CommentController
 
     async unlike(request: Request, response: Response)
     {
-        let commentId = request.params.commentId;
+        let commentId = asString(request.params.commentId)!;
         let user = request.user!;
         const unlikedComment = await commentService.unlike(commentId, user);
         if(!unlikedComment) return response.status(404).send("Comment not found");

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import PostService from "../../services/postService";
 import { S3Service } from "../../services/s3Service";
 import { isS3Configured } from "../../utils/s3Config";
+import { asString } from "../../utils/asString";
 
 const postService = new PostService();
 
@@ -9,8 +10,8 @@ export default class PostController
 {
     async getAllPosts(request: Request, response: Response)
     {
-        const page = parseInt(request.query.page as string) || 1;
-        const limit = parseInt(request.query.limit as string) || 10;
+        const page = parseInt(asString(request.query.page as any) ?? '1', 10) || 1;
+        const limit = parseInt(asString(request.query.limit as any) ?? '10', 10) || 10;
         const posts = await postService.getPosts(page, limit);
         if(!posts) return response.status(404).send('No posts yet');
         return response.status(200).json(posts);
@@ -18,7 +19,7 @@ export default class PostController
 
     async getPost(request: Request, response: Response)
     {
-        const postId = request.params.postId;
+        const postId = asString(request.params.postId)!;
         const post = await postService.getPostById(postId);
         if(!post) return response.status(404).send("Post not found");
         return response.status(200).json(post);
@@ -49,7 +50,7 @@ export default class PostController
 
     async updatePost(request: Request, response: Response)
     {
-        let postId = request.params.postId;
+        let postId = asString(request.params.postId)!;
         let post = request.body;
         let imageURL: string | undefined | null = undefined;
 
@@ -81,7 +82,7 @@ export default class PostController
 
     async deletePost(request: Request, response: Response)
     {
-        let postId = request.params.postId;
+        let postId = asString(request.params.postId)!;
         const deletedPost = await postService.deletePost(postId);
         if(!deletedPost) return response.status(404).send("Post not found");
         return response.status(200).json({message: "Post deleted successfully", post: deletedPost});
@@ -89,7 +90,7 @@ export default class PostController
 
     async like(request: Request, response: Response)
     {
-        let postId = request.params.postId;
+        let postId = asString(request.params.postId)!;
         let user = request.user!;
         const likedPost = await postService.like(postId, user);
         if(!likedPost) return response.status(404).send("Post not found");
@@ -98,7 +99,7 @@ export default class PostController
 
     async unlike(request: Request, response: Response)
     {
-        let postId = request.params.postId;
+        let postId = asString(request.params.postId)!;
         let user = request.user!;
         const unlikedPost = await postService.unlike(postId, user);
         if(!unlikedPost) return response.status(404).send("Post not found");

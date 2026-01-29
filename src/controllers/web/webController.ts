@@ -7,6 +7,7 @@ import { UserPayload, RefreshPayload } from "../../config/express";
 import crypto from 'crypto';
 import { Post } from "../../entities/postEntity";
 import { isS3Configured } from "../../utils/s3Config";
+import { asString } from "../../utils/asString";
 
 const postService = new PostService();
 const commentService = new CommentService();
@@ -34,7 +35,7 @@ export default class WebController
             response.redirect('/');
         else
         {
-            const page = parseInt(request.query.page as string) || 1;
+            const page = parseInt(asString(request.query.page as any) ?? '1', 10) || 1;
             const posts = await postService.getPosts(page, 10);
             const postsCount = await Post.count();
             const totalPages = Math.ceil(postsCount/10);
@@ -92,7 +93,7 @@ export default class WebController
             const hash =  crypto.createHash('sha256').update(email).digest('hex');
             const res = await fetch(`https://www.gravatar.com/avatar/${hash}?s=200&d=404`);
 
-            const page = parseInt(request.query.postsPage as string) || 1;
+            const page = parseInt(asString(request.query.postsPage as any) ?? '1', 10) || 1;
             posts = await postService.getPostsByUserId(user._id, page, 10);
             if(posts)
             {
@@ -119,8 +120,8 @@ export default class WebController
     async showUserProfile(request: Request, response: Response)
     {
         const currentUser = request.user;
-        const userId = request.params.userId;
-        const page = parseInt(request.query.postsPage as string) || 1;
+        const userId = asString(request.params.userId)!;
+        const page = parseInt(asString(request.query.postsPage as any) ?? '1', 10) || 1;
         const s3Enabled = isS3Configured();
         const user = await userService.getUserById(userId);
         if(user)
@@ -168,7 +169,7 @@ export default class WebController
     async editUser(request: Request, response: Response)
     {
         const currentUser = request.user;
-        const userId = request.params.userId;
+        const userId = asString(request.params.userId)!;
         if(currentUser?._id === userId)
         {
             return response.redirect('/profile/edit');

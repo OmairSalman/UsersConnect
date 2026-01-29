@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import UserService from "../../services/userService";
 import PostService from "../../services/postService";
+import { asString } from "../../utils/asString";
 import jwt from 'jsonwebtoken';
 
 const userService = new UserService();
@@ -17,7 +18,7 @@ export default class UserController
 
     async getUserById(request: Request, response: Response)
     {
-        const userId = request.params.id;
+        const userId = asString(request.params.id)!;
         const user = await userService.getUserById(userId);
         if(!user) response.status(404).send('User not found')
         else
@@ -28,7 +29,7 @@ export default class UserController
 
     async updateUser(request: Request, response: Response)
     {
-        const userId = request.params.id;
+        const userId = asString(request.params.id)!;
         const updatedUser = request.body;
 
         if(userId !== request.user?._id && !request.user?.isAdmin)
@@ -106,7 +107,7 @@ export default class UserController
 
     async deleteUser(request: Request, response: Response)
     {
-        const userId = request.params.id;
+        const userId = asString(request.params.id)!;
         if(userId !== request.user?._id && !request.user?.isAdmin)
         {
             return response.status(403).send({message: "Forbidden: Admins only"});
@@ -121,16 +122,16 @@ export default class UserController
 
     async searchUsers(request: Request, response: Response)
     {
-        const searchTerm = request.query.search as string;
-        if (!searchTerm) response.status(400).send('Search query is required');
+        const searchTerm = asString(request.query.search as any);
+        if (!searchTerm) return response.status(400).send('Search query is required');
         const filteredUsers = await userService.searchUsers(searchTerm);
         response.status(200).json(filteredUsers);
     }
 
     async getUserPosts(request: Request, response: Response)
     {
-        let userId = request.params.userId;
-        const page = parseInt(request.query.page as string) || 1;
+        let userId = asString(request.params.userId)!;
+        const page = parseInt(asString(request.query.page as any) ?? '1', 10) || 1;
         const posts = await postService.getPostsByUserId(userId, page, 10);
         if(!posts) return response.status(404).send("No posts by user");
         return response.status(200).send({message: `Found posts of user with id ${userId}`, posts: posts});
@@ -138,7 +139,7 @@ export default class UserController
 
     async toggleAdmin(request: Request, response: Response)
     {
-        let userId = request.params.userId;
+        let userId = asString(request.params.userId)!;
         const user = await userService.toggleAdmin(userId);
         if(!user)
             return response.status(404).json({message: "User not found", success: false});
