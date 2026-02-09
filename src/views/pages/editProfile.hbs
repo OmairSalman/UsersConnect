@@ -18,6 +18,16 @@
       <input type="text" id="edit-name" name="name" value="{{currentUser.name}}" class="form-control" required>
     </div>
 
+    <div class="form-group mb-3">
+      <div class="form-check">
+        <input type="checkbox" class="form-check-input" id="isEmailPublic" name="isEmailPublic" {{#if currentUser.isEmailPublic}}checked{{/if}}>
+        <label class="form-check-label" for="isEmailPublic">
+          Make my email visible on my profile
+        </label>
+      </div>
+      <small class="form-text text-muted">When unchecked, only you can see your email address.</small>
+    </div>
+
     <!-- Section: Sensitive info (locked by password) -->
     <div class="form-group mb-3">
       <label for="current-password">Enter your current password to edit email or password</label>

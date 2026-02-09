@@ -2,6 +2,7 @@ export type PublicUser = {
   _id: string;
   name: string;
   email: string;
+  isEmailPublic: boolean;
   avatarURL: string;
   isAdmin: boolean;
 };

@@ -33,12 +33,16 @@ export default class UserService
         return safeUser;
     }
 
-    async updateUser(userId: string, updatedUser: {name: string, email: string, newPassword: string, confirmPassword: string}): Promise<PublicUser | string>
+    async updateUser(userId: string, updatedUser: {name: string, email: string, isEmailPublic?: boolean, newPassword: string, confirmPassword: string}): Promise<PublicUser | string>
     {
         const updateData: any = {
             name: updatedUser.name,
             email: updatedUser.email
         };
+
+        if (typeof updatedUser.isEmailPublic === 'boolean') {
+            updateData.isEmailPublic = updatedUser.isEmailPublic;
+        }
         
         if (updatedUser.newPassword && updatedUser.newPassword.trim() !== "") {
             const salt = await bcrypt.genSalt(10);

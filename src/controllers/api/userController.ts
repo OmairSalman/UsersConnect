@@ -76,6 +76,7 @@ export default class UserController
                     _id: user._id,
                     name: user.name,
                     email: user.email,
+                    isEmailPublic: user.isEmailPublic,
                     avatarURL: user.avatarURL,
                     isAdmin: user.isAdmin
                 };

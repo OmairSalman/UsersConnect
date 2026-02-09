@@ -46,7 +46,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const formData = new FormData(form);
       const data = {};
-      formData.forEach((value, key) => { data[key] = value; });
+      formData.forEach((value, key) => { 
+        data[key] = value; 
+      });
+
+      data.isEmailPublic = document.getElementById('isEmailPublic').checked;
 
       // Password match check
       const warning = document.getElementById('password-warning');

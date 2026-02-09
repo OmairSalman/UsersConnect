@@ -16,7 +16,13 @@
 
   <div class="profile-info">
     <h1>{{user.name}}</h1>
-    <p>{{user.email}}</p>
+    {{#if (isOwner currentUser._id user._id)}}
+      <p>{{user.email}}</p>
+    {{else}}
+      {{#if user.isEmailPublic}}
+        <p>{{user.email}}</p>
+      {{/if}}
+    {{/if}}
 
     {{#if (isOwner currentUser._id user._id)}}
       <a href="/profile/edit" class="btn btn-outline-primary edit-profile-btn">

@@ -26,6 +26,7 @@ export default class AuthController
                 _id: user._id,
                 name: user.name,
                 email: user.email,
+                isEmailPublic: user.isEmailPublic,
                 avatarURL: user.avatarURL,
                 isAdmin: user.isAdmin
             };
@@ -64,6 +65,7 @@ export default class AuthController
             _id: newUser._id,
             name: newUser.name,
             email: newUser.email,
+            isEmailPublic: newUser.isEmailPublic,
             avatarURL: newUser.avatarURL,
             isAdmin: false
         };
