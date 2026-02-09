@@ -88,7 +88,10 @@
         {{/if}}
 
         <form action="/posts/{{post._id}}/like" method="POST" data-post-id="{{post._id}}" class="m-0">
-          <button class="icon-btn like-btn {{#if (isLiked post.likes currentUser._id)}}liked{{/if}}" data-liked="{{isLiked post.likes currentUser._id}}" title="Like/Unlike">
+          <button class="icon-btn like-btn {{#if (isLiked post.likes currentUser._id)}}liked{{/if}}" 
+                  data-liked="{{isLiked post.likes currentUser._id}}" 
+                  data-user-id="{{currentUser._id}}"
+                  title="Like/Unlike">
             <i class="fa-solid fa-thumbs-up"></i>
           </button>
         </form>
@@ -98,6 +101,22 @@
           data-post-id="{{post._id}}"
           data-likes='[{{#each post.likes}}{"_id": "{{this._id}}", "name": "{{this.name}}", "avatarURL": "{{this.avatarURL}}"}{{#unless @last}},{{/unless}}{{/each}}]'>
           {{post.likes.length}}
+        </span>
+
+        <form action="/posts/{{post._id}}/dislike" method="POST" data-post-id="{{post._id}}" class="m-0">
+          <button class="icon-btn dislike-btn {{#if (isLiked post.dislikes currentUser._id)}}disliked{{/if}}" 
+                  data-disliked="{{isLiked post.dislikes currentUser._id}}" 
+                  data-user-id="{{currentUser._id}}"
+                  title="Dislike/Undislike">
+            <i class="fa-solid fa-thumbs-down"></i>
+          </button>
+        </form>
+        <span style="cursor: pointer;"
+          class="dislike-count mt-1 small text-muted"
+          id="dislike-count-{{post._id}}"
+          data-post-id="{{post._id}}"
+          data-dislikes='[{{#each post.dislikes}}{"_id": "{{this._id}}", "name": "{{this.name}}", "avatarURL": "{{this.avatarURL}}"}{{#unless @last}},{{/unless}}{{/each}}]'>
+          {{post.dislikes.length}}
         </span>
       </div>
     </div> <!-- end post-grid -->

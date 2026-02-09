@@ -38,6 +38,10 @@ export class Comment extends BaseEntity
   @JoinTable()
   likes!: User[]
 
+  @ManyToMany(() => User, { eager: true })
+  @JoinTable()
+  dislikes!: User[]
+
   @CreateDateColumn()
   createdAt!: Date
 

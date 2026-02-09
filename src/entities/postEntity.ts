@@ -31,6 +31,10 @@ export class Post extends BaseEntity
   @JoinTable()
   likes!: User[]
 
+  @ManyToMany(() => User, { eager: true })
+  @JoinTable()
+  dislikes!: User[]
+
   @CreateDateColumn()
   createdAt!: Date
 

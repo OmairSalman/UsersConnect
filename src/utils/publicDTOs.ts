@@ -20,6 +20,7 @@ export function commentToPublic(comment: Comment): PublicComment {
     content: comment.content,
     author: userToPublic(comment.author),
     likes: comment.likes.map(userToPublic),
+    dislikes: comment.dislikes.map(userToPublic),
     createdAt: comment.createdAt,
     updatedAt: comment.updatedAt,
   };
@@ -33,6 +34,7 @@ export function postToPublic(post: Post): PublicPost {
     imageURL: post.imageURL,
     author: userToPublic(post.author),
     likes: post.likes.map(userToPublic),
+    dislikes: post.dislikes.map(userToPublic),
     comments: (post.comments ?? [])
       .slice()
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())

@@ -375,10 +375,57 @@ footer a:hover {
   font-size: 0.875rem;
   padding: 0.25rem 0.75rem;
 }
-.post-card .like-count {
-  text-align: center;
-  font-size: 1rem;
-  color: var(--text-muted);
+/* Make like/dislike counts easier to tap on mobile */
+.like-count,
+.dislike-count {
+  padding: 0.5rem;
+  min-width: 40px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.like-count:hover,
+.dislike-count:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Post card counts - already have mt-1, keep that */
+.post-card .like-count,
+.post-card .dislike-count {
+  margin-top: 0.25rem !important;
+}
+
+/* Comment counts */
+.comment-wrapper .like-count,
+.comment-wrapper .dislike-count {
+  margin-top: 0.25rem !important;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .like-count,
+  .dislike-count {
+    padding: 0.75rem;
+    min-width: 48px;
+    min-height: 48px;
+    font-size: 1.1rem; /* Bigger font size */
+  }
+
+  /* For comments: make buttons and counts horizontal on mobile */
+  .comment-wrapper .d-flex.flex-column.align-items-center {
+    flex-direction: row !important;
+    gap: 0.5rem;
+  }
+
+  /* Remove top margin on comment counts when horizontal */
+  .comment-wrapper .like-count,
+  .comment-wrapper .dislike-count {
+    margin-top: 0 !important;
+  }
 }
 
 /* ---------- Comment Form ---------- */
@@ -536,6 +583,10 @@ footer a:hover {
 }
 
 /* For post like button */
+.post-card .icon-btn.like-btn {
+  transition: all 0.2s ease;
+}
+
 .post-card .icon-btn.like-btn.liked,
 .post-card .icon-btn.like-btn.liked:hover {
   background: var(--brand-gradient);
@@ -544,9 +595,49 @@ footer a:hover {
 }
 
 /* For comment like button */
-.comment-card .icon-btn.like-btn.liked,
-.comment-card .icon-btn.like-btn.liked:hover {
+.comment-wrapper .icon-btn.like-btn {
+  transition: all 0.2s ease;
+}
+
+.comment-wrapper .icon-btn.like-btn.liked,
+.comment-wrapper .icon-btn.like-btn.liked:hover {
   background: var(--brand-gradient);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* For post dislike button */
+.post-card .icon-btn.dislike-btn {
+  transition: all 0.2s ease;
+}
+
+.post-card .icon-btn.dislike-btn:hover {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  border-color: transparent;
+  color: #fff;
+}
+
+.post-card .icon-btn.dislike-btn.disliked,
+.post-card .icon-btn.dislike-btn.disliked:hover {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  border-color: transparent;
+  color: #fff;
+}
+
+/* For comment dislike button */
+.comment-wrapper .icon-btn.dislike-btn {
+  transition: all 0.2s ease;
+}
+
+.comment-wrapper .icon-btn.dislike-btn:hover {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: #fff;
+  border-color: transparent;
+}
+
+.comment-wrapper .icon-btn.dislike-btn.disliked,
+.comment-wrapper .icon-btn.dislike-btn.disliked:hover {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
   color: #fff;
   border-color: transparent;
 }
@@ -946,6 +1037,16 @@ footer a:hover {
   font-weight: 600;
   margin-bottom: 1rem;
   background: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dislike-popup-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;

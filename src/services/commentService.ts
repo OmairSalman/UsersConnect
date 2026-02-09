@@ -123,15 +123,20 @@ export default class CommentService
         try
         {
             const comment = await Comment.findOne(
-                {
-                    where: { _id: commentId },
-                    relations: ["post"]
-                });
+            {
+                where: { _id: commentId },
+                relations: ["post"]
+            });
             if (!comment) return null;
 
+            // Add to likes if not already there
             if (!comment.likes.some(u => u._id === user._id))
             {
                 comment.likes.push(user as User);
+                
+                // Remove from dislikes if they disliked it before
+                comment.dislikes = comment.dislikes.filter(u => u._id !== user._id);
+                
                 await comment.save();
             }
 
@@ -145,7 +150,7 @@ export default class CommentService
         catch (error)
         {
             const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error liking comment:`, error);
+            logger.error(`Error liking comment:`, error);
             return null;
         }
     }
@@ -175,6 +180,72 @@ export default class CommentService
         {
             const errorDate = new Date();
             logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error unliking comment:`, error);
+            return null;
+        }
+    }
+
+    async dislike(commentId: string, user: UserPayload): Promise<PublicComment | null>
+    {
+        try
+        {
+            const comment = await Comment.findOne(
+                {
+                    where: { _id: commentId },
+                    relations: ["post"]
+                });
+            if (!comment) return null;
+
+            // Add to dislikes if not already there
+            if (!comment.dislikes.some(u => u._id === user._id))
+            {
+                comment.dislikes.push(user as User);
+                
+                // Remove from likes if they liked it before
+                comment.likes = comment.likes.filter(u => u._id !== user._id);
+                
+                await comment.save();
+            }
+
+            const keys = await redisClient.keys(`user:${comment.post.author._id}:posts:page:*`);
+            if (keys.length) await redisClient.del(keys);
+            await redisClient.del('feed:page:1');
+            await redisClient.del(`user:${comment.author._id}:comments:likes:count`);
+            const safeComment = commentToPublic(comment);
+            return safeComment;
+        }
+        catch (error)
+        {
+            const errorDate = new Date();
+            logger.error(`Error disliking comment:`, error);
+            return null;
+        }
+    }
+
+    async undislike(commentId: string, user: UserPayload): Promise<PublicComment | null>
+    {
+        try
+        {
+            const comment = await Comment.findOne(
+            {
+                where: { _id: commentId },
+                relations: ["post"]
+            });
+            if (!comment) return null;
+
+            comment.dislikes = comment.dislikes.filter(u => u._id !== user._id);
+            await comment.save();
+
+            const keys = await redisClient.keys(`user:${comment.post.author._id}:posts:page:*`);
+            if (keys.length) await redisClient.del(keys);
+            await redisClient.del('feed:page:1');
+            await redisClient.del(`user:${comment.author._id}:comments:likes:count`);
+            const safeComment = commentToPublic(comment);
+            return safeComment;
+        }
+        catch (error)
+        {
+            const errorDate = new Date();
+            logger.error(`Error undisliking comment:`, error);
             return null;
         }
     }

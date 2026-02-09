@@ -95,7 +95,14 @@ export default class PostController
         let user = request.user!;
         const likedPost = await postService.like(postId, user);
         if(!likedPost) return response.status(404).send("Post not found");
-        return response.status(200).json({message: `Liked post ${postId} by ${user._id} successfully.`, liked: true, likeCount: likedPost.likes.length, likes: likedPost.likes});
+        return response.status(200).json({
+            message: `Liked post ${postId} by ${user._id} successfully.`, 
+            liked: true, 
+            likeCount: likedPost.likes.length, 
+            likes: likedPost.likes,
+            dislikeCount: likedPost.dislikes.length,
+            dislikes: likedPost.dislikes
+        });
     }
 
     async unlike(request: Request, response: Response)
@@ -104,6 +111,57 @@ export default class PostController
         let user = request.user!;
         const unlikedPost = await postService.unlike(postId, user);
         if(!unlikedPost) return response.status(404).send("Post not found");
-        return response.status(200).json({message: `Unliked post ${postId} by ${user._id} successfully.`, liked: false, likeCount: unlikedPost.likes.length, likes: unlikedPost.likes});
+        return response.status(200).json({
+            message: `Unliked post ${postId} by ${user._id} successfully.`, 
+            liked: false, 
+            likeCount: unlikedPost.likes.length, 
+            likes: unlikedPost.likes,
+            dislikeCount: unlikedPost.dislikes.length,
+            dislikes: unlikedPost.dislikes
+        });
+    }
+
+    async dislike(request: Request, response: Response): Promise<void>
+    {
+        let postId = asString(request.params.postId)!;
+        const user = request.user!;
+
+        const post = await postService.dislike(postId, user);
+        if (!post)
+        {
+            response.status(404).json({ message: "Post not found" });
+            return;
+        }
+
+        response.status(200).json({
+            message: `Disliked post ${postId} by ${user._id} successfully.`,
+            disliked: true,
+            dislikeCount: post.dislikes.length,
+            dislikes: post.dislikes,
+            likeCount: post.likes.length,
+            likes: post.likes
+        });
+    }
+
+    async undislike(request: Request, response: Response): Promise<void>
+    {
+        const postId = asString(request.params.postId)!;
+        const user = request.user!;
+
+        const post = await postService.undislike(postId, user);
+        if (!post)
+        {
+            response.status(404).json({ message: "Post not found" });
+            return;
+        }
+
+        response.status(200).json({
+            message: `Undisliked post ${postId} by ${user._id} successfully.`,
+            disliked: false,
+            dislikeCount: post.dislikes.length,
+            dislikes: post.dislikes,
+            likeCount: post.likes.length,
+            likes: post.likes
+        });
     }
 }

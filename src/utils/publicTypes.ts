@@ -12,6 +12,7 @@ export type PublicComment = {
   content: string;
   author: Omit<PublicUser, "email">;
   likes: Omit<PublicUser, "email">[];
+  dislikes: Omit<PublicUser, "email">[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -23,6 +24,7 @@ export type PublicPost = {
   imageURL?: string;
   author: Omit<PublicUser, "email">;
   likes: Omit<PublicUser, "email">[];
+  dislikes: Omit<PublicUser, "email">[];
   comments: PublicComment[];
   createdAt: Date;
   updatedAt: Date;

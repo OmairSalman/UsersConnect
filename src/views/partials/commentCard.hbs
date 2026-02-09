@@ -44,22 +44,45 @@
       </div>
     </div>
 
-    <!-- Like button + count vertically centered with bubble -->
-    <div class="d-flex align-items-center ms-2">
-      <form action="/comments/{{comment._id}}/like" method="POST" data-comment-id="{{comment._id}}" class="d-flex align-items-center">
-        <button class="icon-btn like-btn me-1 {{#if (isLiked comment.likes currentUser._id)}}liked{{/if}}"
-                data-liked="{{isLiked comment.likes currentUser._id}}"
-                title="Like/Unlike">
-          <i class="fa-solid fa-thumbs-up"></i>
-        </button>
+    <!-- Like & Dislike buttons + counts (HORIZONTAL) -->
+    <div class="d-flex flex-row align-items-center ms-2 gap-2">
+      <!-- Like button + count (vertical group) -->
+      <div class="d-flex flex-column align-items-center">
+        <form action="/comments/{{comment._id}}/like" method="POST" data-comment-id="{{comment._id}}" class="m-0">
+          <button class="icon-btn like-btn {{#if (isLiked comment.likes currentUser._id)}}liked{{/if}}"
+                  data-liked="{{isLiked comment.likes currentUser._id}}"
+                  data-user-id="{{currentUser._id}}"
+                  title="Like/Unlike">
+            <i class="fa-solid fa-thumbs-up"></i>
+          </button>
+        </form>
         <span style="cursor: pointer;"
-          class="like-count small"
+          class="like-count mt-1 small text-muted"
           id="like-count-{{comment._id}}"
           data-comment-id="{{comment._id}}"
           data-likes='[{{#each comment.likes}}{"_id": "{{this._id}}", "name": "{{this.name}}", "avatarURL": "{{this.avatarURL}}"}{{#unless @last}},{{/unless}}{{/each}}]'>
           {{comment.likes.length}}
         </span>
-      </form>
+      </div>
+
+      <!-- Dislike button + count (vertical group) -->
+      <div class="d-flex flex-column align-items-center">
+        <form action="/comments/{{comment._id}}/dislike" method="POST" data-comment-id="{{comment._id}}" class="m-0">
+          <button class="icon-btn dislike-btn {{#if (isLiked comment.dislikes currentUser._id)}}disliked{{/if}}"
+                  data-disliked="{{isLiked comment.dislikes currentUser._id}}"
+                  data-user-id="{{currentUser._id}}"
+                  title="Dislike/Undislike">
+            <i class="fa-solid fa-thumbs-down"></i>
+          </button>
+        </form>
+        <span style="cursor: pointer;"
+          class="dislike-count mt-1 small text-muted"
+          id="dislike-count-{{comment._id}}"
+          data-comment-id="{{comment._id}}"
+          data-dislikes='[{{#each comment.dislikes}}{"_id": "{{this._id}}", "name": "{{this.name}}", "avatarURL": "{{this.avatarURL}}"}{{#unless @last}},{{/unless}}{{/each}}]'>
+          {{comment.dislikes.length}}
+        </span>
+      </div>
     </div>
   </div>
 </div>

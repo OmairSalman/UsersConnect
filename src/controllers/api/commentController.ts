@@ -46,7 +46,14 @@ export default class CommentController
         let user = request.user!;
         const likedComment = await commentService.like(commentId, user);
         if(!likedComment) return response.status(404).send("Comment not found");
-        return response.status(200).json({message: `Liked comment ${commentId} by ${user._id} successfully.`, liked: true, likeCount: likedComment.likes.length, likes: likedComment.likes});
+        return response.status(200).json({
+            message: `Liked comment ${commentId} by ${user._id} successfully.`, 
+            liked: true, 
+            likeCount: likedComment.likes.length, 
+            likes: likedComment.likes,
+            dislikeCount: likedComment.dislikes.length,
+            dislikes: likedComment.dislikes
+        });
     }
 
     async unlike(request: Request, response: Response)
@@ -55,6 +62,57 @@ export default class CommentController
         let user = request.user!;
         const unlikedComment = await commentService.unlike(commentId, user);
         if(!unlikedComment) return response.status(404).send("Comment not found");
-        return response.status(200).json({message: `Unliked comment ${commentId} by ${user._id} successfully.`, liked: false, likeCount: unlikedComment.likes.length, likes: unlikedComment.likes});
+        return response.status(200).json({
+            message: `Unliked comment ${commentId} by ${user._id} successfully.`, 
+            liked: false, 
+            likeCount: unlikedComment.likes.length, 
+            likes: unlikedComment.likes,
+            dislikeCount: unlikedComment.dislikes.length,
+            dislikes: unlikedComment.dislikes
+        });
+    }
+
+    async dislike(request: Request, response: Response): Promise<void>
+    {
+        let commentId = asString(request.params.commentId)!;
+        const user = request.user!;
+
+        const comment = await commentService.dislike(commentId, user);
+        if (!comment)
+        {
+            response.status(404).json({ message: "Comment not found" });
+            return;
+        }
+
+        response.status(200).json({
+            message: `Disliked comment ${commentId} by ${user._id} successfully.`,
+            disliked: true,
+            dislikeCount: comment.dislikes.length,
+            dislikes: comment.dislikes,
+            likeCount: comment.likes.length,
+            likes: comment.likes
+        });
+    }
+
+    async undislike(request: Request, response: Response): Promise<void>
+    {
+        const commentId = asString(request.params.commentId)!;
+        const user = request.user!;
+
+        const comment = await commentService.undislike(commentId, user);
+        if (!comment)
+        {
+            response.status(404).json({ message: "Comment not found" });
+            return;
+        }
+
+        response.status(200).json({
+            message: `Undisliked comment ${commentId} by ${user._id} successfully.`,
+            disliked: false,
+            dislikeCount: comment.dislikes.length,
+            dislikes: comment.dislikes,
+            likeCount: comment.likes.length,
+            likes: comment.likes
+        });
     }
 }

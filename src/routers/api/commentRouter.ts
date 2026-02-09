@@ -20,4 +20,8 @@ CommentRouter.post('/:commentId/like', commentController.like)
 
 CommentRouter.delete('/:commentId/like', commentController.unlike);
 
+CommentRouter.post('/:commentId/dislike', commentController.dislike);
+
+CommentRouter.delete('/:commentId/dislike', commentController.undislike);
+
 export default CommentRouter;

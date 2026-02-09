@@ -37,4 +37,8 @@ PostRouter.post('/:postId/like', postController.like)
 
 PostRouter.delete('/:postId/like', postController.unlike);
 
+PostRouter.post('/:postId/dislike', postController.dislike);
+
+PostRouter.delete('/:postId/dislike', postController.undislike);
+
 export default PostRouter;

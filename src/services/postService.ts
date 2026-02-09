@@ -240,19 +240,25 @@ export default class PostService
         try
         {
             const post = await Post.findOne(
-                {
-                    where: { _id: postId },
-                });
+            {
+                where: { _id: postId },
+            });
             if (!post) return null;
 
+            // Add to likes if not already there
             if (!post.likes.some(u => u._id === user._id))
             {
                 post.likes.push(user as User);
+                
+                // Remove from dislikes if they disliked it before
+                post.dislikes = post.dislikes.filter(u => u._id !== user._id);
+                
                 await post.save();
             }
 
             const keys = await redisClient.keys(`user:${post.author._id}:posts:*`);
             if (keys.length) await redisClient.del(keys);
+
             await redisClient.del('feed:page:1');
             const safePost = postToPublic(post);
             return safePost;
@@ -260,7 +266,7 @@ export default class PostService
         catch (error)
         {
             const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error liking post:`, error);
+            logger.error(`Error liking post:`, error);
             return null;
         }
     }
@@ -289,6 +295,70 @@ export default class PostService
         {
             const errorDate = new Date();
             logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error unliking post:`, error);
+            return null;
+        }
+    }
+
+    async dislike(postId: string, user: UserPayload): Promise<PublicPost | null>
+    {
+        try
+        {
+            const post = await Post.findOne(
+            {
+                where: { _id: postId },
+            });
+            if (!post) return null;
+
+            // Add to dislikes if not already there
+            if (!post.dislikes.some(u => u._id === user._id))
+            {
+                post.dislikes.push(user as User);
+                
+                // Remove from likes if they liked it before
+                post.likes = post.likes.filter(u => u._id !== user._id);
+                
+                await post.save();
+            }
+
+            const keys = await redisClient.keys(`user:${post.author._id}:posts:*`);
+            if (keys.length) await redisClient.del(keys);
+
+            await redisClient.del('feed:page:1');
+            const safePost = postToPublic(post);
+            return safePost;
+        }
+        catch (error)
+        {
+            const errorDate = new Date();
+            logger.error(`Error disliking post:`, error);
+            return null;
+        }
+    }
+
+    async undislike(postId: string, user: UserPayload): Promise<PublicPost | null>
+    {
+        try
+        {
+            const post = await Post.findOne(
+            {
+                where: { _id: postId },
+            });
+            if (!post) return null;
+
+            post.dislikes = post.dislikes.filter(u => u._id !== user._id);
+            await post.save();
+
+            const keys = await redisClient.keys(`user:${post.author._id}:posts:*`);
+            if (keys.length) await redisClient.del(keys);
+
+            await redisClient.del('feed:page:1');
+            const safePost = postToPublic(post);
+            return safePost;
+        }
+        catch (error)
+        {
+            const errorDate = new Date();
+            logger.error(`Error undisliking post:`, error);
             return null;
         }
     }
