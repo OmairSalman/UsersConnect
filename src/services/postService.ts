@@ -5,6 +5,7 @@ import { postToPublic } from "../utils/publicDTOs";
 import { PublicPost } from "../utils/publicTypes";
 import { UserPayload } from "../config/express";
 import { S3Service } from "./s3Service";
+import logger from '../config/logger';
 
 export default class PostService
 {
@@ -36,7 +37,7 @@ export default class PostService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error fetching posts:\n`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error fetching posts:\n`, error);
             return [];
         }
     }
@@ -57,7 +58,7 @@ export default class PostService
         (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error fetching post by ID:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error fetching post by ID:`, error);
             return null;
         }
     }
@@ -83,7 +84,7 @@ export default class PostService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error saving post:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error saving post:`, error);
             return null;
         }
     }
@@ -138,7 +139,7 @@ export default class PostService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error updating post:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error updating post:`, error);
             return null;
         }
     }
@@ -173,7 +174,7 @@ export default class PostService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error deleting post:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error deleting post:`, error);
             return null;
         }
     }
@@ -205,7 +206,7 @@ export default class PostService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error fetching posts by user:\n`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error fetching posts by user:\n`, error);
             return null;
         }
     }
@@ -259,7 +260,7 @@ export default class PostService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error liking post:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error liking post:`, error);
             return null;
         }
     }
@@ -287,7 +288,7 @@ export default class PostService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error unliking post:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error unliking post:`, error);
             return null;
         }
     }

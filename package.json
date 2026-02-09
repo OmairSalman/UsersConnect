@@ -18,7 +18,7 @@
   "author": "Omair Salman",
   "license": "MIT",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.953.0",
+    "@aws-sdk/client-s3": "^3.985.0",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "dayjs": "^1.11.13",
@@ -35,7 +35,8 @@
     "mysql2": "^3.14.3",
     "redis": "^5.8.2",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.26"
+    "typeorm": "^0.3.26",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.27.1",

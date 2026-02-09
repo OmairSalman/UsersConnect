@@ -5,6 +5,7 @@ import { Post } from "../entities/postEntity";
 import { User } from "../entities/userEntity";
 import { commentToPublic } from "../utils/publicDTOs";
 import { PublicComment } from "../utils/publicTypes";
+import logger from '../config/logger';
 
 export default class CommentService
 {
@@ -34,7 +35,7 @@ export default class CommentService
         catch(error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error saving comment:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error saving comment:`, error);
             return null;
         }
     }
@@ -84,7 +85,7 @@ export default class CommentService
         catch(error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error updating comment:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error updating comment:`, error);
             return null;
         }
     }
@@ -112,7 +113,7 @@ export default class CommentService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error deleting comment:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error deleting comment:`, error);
             return null;
         }
     }
@@ -144,7 +145,7 @@ export default class CommentService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error liking comment:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error liking comment:`, error);
             return null;
         }
     }
@@ -173,7 +174,7 @@ export default class CommentService
         catch (error)
         {
             const errorDate = new Date();
-            console.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error unliking comment:`, error);
+            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error unliking comment:`, error);
             return null;
         }
     }

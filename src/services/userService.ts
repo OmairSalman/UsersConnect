@@ -4,6 +4,7 @@ import { PublicUser } from "../utils/publicTypes";
 import { userToPublic } from "../utils/publicDTOs";
 import redisClient from "../config/redis";
 import bcrypt from 'bcrypt';
+import logger from '../config/logger';
 
 export default class UserService
 {
@@ -20,7 +21,7 @@ export default class UserService
             const errorDate = new Date();
             const errorDateString = errorDate.toLocaleDateString();
             const errorTimeString = errorDate.toLocaleTimeString();
-            console.error(`[${errorDateString} @ ${errorTimeString}] Error fetching users data from DB:\n`, error);
+            logger.error(`[${errorDateString} @ ${errorTimeString}] Error fetching users data from DB:\n`, error);
             return [];
         }
     }

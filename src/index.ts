@@ -15,6 +15,8 @@ import AppDataSource from './config/dataSource';
 import dotenv from 'dotenv';
 import hbsHelpers from './views/helpers/hbsHelpers';
 
+import logger from './config/logger';
+
 dotenv.config();
 
 const app = express();
@@ -46,18 +48,18 @@ async function connectWithRetry(retries = 10, delay = 5000): Promise<void> {
   for (let i = 0; i < retries; i++) {
     try {
       await AppDataSource.initialize();
-      console.log(`✅ Data Source initialized! Connected to MySQL DB: ${process.env.DATABASE_NAME}`);
+      logger.info(`✅ Data Source initialized! Connected to MySQL DB: ${process.env.DATABASE_NAME}`);
       return;
     } catch (error) {
       const remainingRetries = retries - i - 1;
-      console.error(`❌ Database connection attempt ${i + 1}/${retries} failed.`);
+      logger.error(`❌ Database connection attempt ${i + 1}/${retries} failed.`);
       
       if (remainingRetries > 0) {
-        console.log(`⏳ Retrying in ${delay / 1000} seconds... (${remainingRetries} attempts remaining)`);
+        logger.info(`⏳ Retrying in ${delay / 1000} seconds... (${remainingRetries} attempts remaining)`);
         await new Promise(resolve => setTimeout(resolve, delay));
       } else {
-        console.error("💥 Failed to connect to database after all retry attempts.");
-        console.error("Error details:", error);
+        logger.error("💥 Failed to connect to database after all retry attempts.");
+        logger.error("Error details:", error);
         process.exit(1);
       }
     }
@@ -75,8 +77,8 @@ async function startServer() {
   app.use('/comments', CommentRouter);
   
   // Start listening
-  app.listen(process.env.PORT, () => { 
-    console.log(`🚀 Server running at http://localhost:${process.env.PORT}/`);
+  app.listen(3000, () => { 
+    logger.info(`🚀 Server running at http://localhost:3000/`);
   });
 }
 

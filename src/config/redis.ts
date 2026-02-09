@@ -1,5 +1,6 @@
 import Redis from "ioredis";
 import 'dotenv/config';
+import logger from './logger';
 
 const redisClient = new Redis(
   {
@@ -8,10 +9,10 @@ const redisClient = new Redis(
     password: process.env.REDIS_PASSWORD
   }
 );
-redisClient.on("connect", () => {console.log("Connected to Redis cache successfully.")})
+redisClient.on("connect", () => {logger.info("Connected to Redis cache successfully.")})
 
 redisClient.on('error', (err: Error) => {
-  console.error('Redis Client Error:', err);
+  logger.error('Redis Client Error:', err);
 });
 
 export default redisClient;

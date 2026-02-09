@@ -15,6 +15,8 @@ declare namespace NodeJS {
     REDIS_HOST: string;
     REDIS_PASSWORD: string;
 
+    LOG_LEVEL: string;
+
     S3_ENDPOINT?: string;
     S3_ACCESS_KEY: string;
     S3_SECRET_KEY: string;

@@ -3,6 +3,7 @@ import PostService from "../../services/postService";
 import { S3Service } from "../../services/s3Service";
 import { isS3Configured } from "../../utils/s3Config";
 import { asString } from "../../utils/asString";
+import logger from '../../config/logger';
 
 const postService = new PostService();
 
@@ -36,7 +37,7 @@ export default class PostController
                 const s3Service = new S3Service();
                 imageURL = await s3Service.uploadPostImage(request.file, request.user!._id);
             } catch (error) {
-                console.error('S3 upload error:', error);
+                logger.error('S3 upload error:', error);
                 return response.status(500).json({message: "Failed to upload image"});
             }
         } else if (request.file && !isS3Configured()) {
@@ -66,7 +67,7 @@ export default class PostController
                     const s3Service = new S3Service();
                     imageURL = await s3Service.uploadPostImage(request.file, request.user!._id);
                 } catch (error) {
-                    console.error('S3 upload error:', error);
+                    logger.error('S3 upload error:', error);
                     return response.status(500).json({message: "Failed to upload image"});
                 }
             }

@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
+import logger from '../config/logger';
 
 export class S3Service {
   private s3Client: S3Client;
@@ -66,9 +67,9 @@ export class S3Service {
       });
 
       await this.s3Client.send(command);
-      console.log(`Deleted image from S3: ${key}`);
+      logger.info(`Deleted image from S3: ${key}`);
     } catch (error) {
-      console.error('Error deleting image from S3:', error);
+      logger.error('Error deleting image from S3:', error);
       // Don't throw - we don't want to fail the whole operation if S3 delete fails
     }
   }

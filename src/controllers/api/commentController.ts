@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import CommentService from "../../services/commentService";
 import { asString } from "../../utils/asString";
+import logger from '../../config/logger';
 
 const commentService = new CommentService();
 
@@ -15,7 +16,7 @@ export default class CommentController
         response.render('partials/commentCard', { comment: savedComment, currentUser: request.user, currentUserId: request.user!._id, layout: false }, (err, html) => {
             if (err)
             {
-                console.error(err);
+                logger.error(err);
                 return response.status(500).json({message: 'Error rendering comment', error: err});
             }
             response.send({ html });

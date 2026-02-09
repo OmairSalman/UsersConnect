@@ -19,6 +19,9 @@ export class User extends BaseEntity
   @Column({ default: false })
   isEmailPublic!: boolean
 
+  @Column({ default: false })
+  isEmailVerified!: boolean
+
   @Column()
   password!: string
 

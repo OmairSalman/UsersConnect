@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 import { PublicUser } from "../utils/publicTypes";
 import { userToPublic } from "../utils/publicDTOs";
+import logger from '../config/logger';
 
 export default class AuthService
 {
@@ -26,7 +27,7 @@ export default class AuthService
             const errorDate = new Date();
             const errorDateString = errorDate.toLocaleDateString();
             const errorTimeString = errorDate.toLocaleTimeString();
-            console.error(`[${errorDateString} @ ${errorTimeString}] Error logging in: `, error);
+            logger.error(`[${errorDateString} @ ${errorTimeString}] Error logging in: `, error);
         }
         return 'error';
     }
