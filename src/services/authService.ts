@@ -27,7 +27,7 @@ export default class AuthService
             const errorDate = new Date();
             const errorDateString = errorDate.toLocaleDateString();
             const errorTimeString = errorDate.toLocaleTimeString();
-            logger.error(`[${errorDateString} @ ${errorTimeString}] Error logging in: `, error);
+            logger.error(`Error logging in: `, error);
         }
         return 'error';
     }

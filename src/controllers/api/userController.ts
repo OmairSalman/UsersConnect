@@ -3,6 +3,8 @@ import UserService from "../../services/userService";
 import PostService from "../../services/postService";
 import { asString } from "../../utils/asString";
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import logger from "../../config/logger";
 
 const userService = new UserService();
 const postService = new PostService();
@@ -145,5 +147,160 @@ export default class UserController
         if(!user)
             return response.status(404).json({message: "User not found", success: false});
         return response.status(200).json({message: "User's admin status switched.", success: true, user: user});
+    }
+
+    async uploadProfilePicture(request: Request, response: Response)
+    {
+        const userId = asString(request.params.id)!;
+        
+        if(userId !== request.user?._id && !request.user?.isAdmin)
+        {
+            return response.status(403).json({message: "Forbidden: You can only change your own profile picture"});
+        }
+
+        if (!request.file)
+        {
+            return response.status(400).json({message: "No image file provided"});
+        }
+
+        try
+        {
+            const updatedUser = await userService.uploadProfilePicture(userId, request.file);
+            
+            if (!updatedUser)
+            {
+                return response.status(404).json({message: "User not found"});
+            }
+
+            // Update JWT tokens if user is updating their own picture
+            if(request.user?._id === userId)
+            {
+                response.clearCookie("accessToken", {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    path: "/",
+                });
+
+                response.clearCookie("refreshToken", {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    path: "/",
+                });
+
+                const accessPayload = {
+                    _id: updatedUser._id,
+                    name: updatedUser.name,
+                    email: updatedUser.email,
+                    isEmailPublic: updatedUser.isEmailPublic,
+                    avatarURL: updatedUser.avatarURL,
+                    isAdmin: updatedUser.isAdmin
+                };
+
+                const refreshPayload = {
+                    _id: updatedUser._id
+                };
+
+                const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
+                const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+
+                response.cookie("accessToken", accessToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    maxAge: 1000 * 60 * 15
+                });
+
+                response.cookie("refreshToken", refreshToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    maxAge: 1000 * 60 * 60 * 24 * 30
+                });
+            }
+
+            return response.status(200).json({success: true, user: updatedUser});
+        }
+        catch (error)
+        {
+            logger.error('Error uploading profile picture:', error);
+            return response.status(500).json({message: "Failed to upload profile picture"});
+        }
+    }
+
+    async removeProfilePicture(request: Request, response: Response)
+    {
+        const userId = asString(request.params.id)!;
+        
+        if(userId !== request.user?._id && !request.user?.isAdmin)
+        {
+            return response.status(403).json({message: "Forbidden: You can only change your own profile picture"});
+        }
+
+        try
+        {
+            const updatedUser = await userService.removeProfilePicture(userId);
+            
+            if (!updatedUser)
+            {
+                return response.status(404).json({message: "User not found"});
+            }
+
+            // Update JWT tokens if user is removing their own picture
+            if(request.user?._id === userId)
+            {
+                response.clearCookie("accessToken", {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    path: "/",
+                });
+
+                response.clearCookie("refreshToken", {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    path: "/",
+                });
+
+                const accessPayload = {
+                    _id: updatedUser._id,
+                    name: updatedUser.name,
+                    email: updatedUser.email,
+                    isEmailPublic: updatedUser.isEmailPublic,
+                    avatarURL: updatedUser.avatarURL,
+                    isAdmin: updatedUser.isAdmin
+                };
+
+                const refreshPayload = {
+                    _id: updatedUser._id
+                };
+
+                const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
+                const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+
+                response.cookie("accessToken", accessToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    maxAge: 1000 * 60 * 15
+                });
+
+                response.cookie("refreshToken", refreshToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === "production",
+                    sameSite: "lax",
+                    maxAge: 1000 * 60 * 60 * 24 * 30
+                });
+            }
+
+            return response.status(200).json({success: true, user: updatedUser});
+        }
+        catch (error)
+        {
+            logger.error('Error removing profile picture:', error);
+            return response.status(500).json({message: "Failed to remove profile picture"});
+        }
     }
 }

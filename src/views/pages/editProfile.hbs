@@ -1,16 +1,68 @@
 <div class="edit-profile-card">
   <h1>Edit Profile</h1>
   <form id="edit-profile-form" method="POST" action="/users/{{currentUser._id}}" autocomplete="off" data-userid="{{currentUser._id}}">
-    <!-- Avatar and Gravatar link -->
-    <div class="form-group d-flex align-items-center mb-3">
+    <!-- Avatar Section -->
+    <div class="form-group mb-4">
+      <label class="form-label fw-semibold">Profile Picture</label>
+      <div class="d-flex align-items-center mb-3">
       <img 
+        id="current-avatar"
         src="{{currentUser.avatarURL}}" 
         alt="{{currentUser.name}}'s avatar" 
-        class="edit-avatar-img me-2"
-        style="width: 64px; height: 64px; border-radius: 50%;"
+        class="edit-avatar-img me-3"
+        style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;"
       >
-      <a href="https://gravatar.com" target="_blank" class="btn btn-link">Change avatar on Gravatar</a>
+      <div>
+        {{#if s3Enabled}}
+          <button type="button" id="remove-custom-picture-btn" class="btn btn-sm btn-danger mb-2" style="display: none;">
+            <i class="fa-solid fa-times"></i> Remove Custom Picture
+          </button>
+          <div>
+            <label for="profile-picture-input" class="btn btn-sm btn-outline-primary mb-0">
+              <i class="fa-solid fa-upload"></i> Upload New Picture
+            </label>
+            <input 
+              type="file" 
+              id="profile-picture-input" 
+              accept="image/*" 
+              style="display: none;">
+            <small class="form-text text-muted d-block mt-1">Max size: 5MB. Supported: JPG, PNG, GIF</small>
+          </div>
+        {{else}}
+          <a href="https://gravatar.com" target="_blank" class="btn btn-link">Change avatar on Gravatar</a>
+        {{/if}}
+      </div>
     </div>
+
+    {{#if s3Enabled}}
+      <!-- Preview Section (hidden by default) -->
+      <div id="profile-picture-preview" style="display: none;">
+        <div class="card p-3 mb-3">
+          <label class="form-label small fw-semibold">Preview:</label>
+          <div class="d-flex align-items-center gap-3">
+            <img 
+              id="preview-avatar" 
+              src="" 
+              alt="Preview" 
+              style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+            <div>
+              <button type="button" id="save-profile-picture-btn" class="btn btn-sm btn-primary me-2">
+                <i class="fa-solid fa-check"></i> Save Picture
+              </button>
+              <button type="button" id="cancel-profile-picture-btn" class="btn btn-sm btn-secondary">
+                <i class="fa-solid fa-times"></i> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <small class="form-text text-muted">
+        Don't have a custom picture? <a href="https://gravatar.com" target="_blank">Change avatar on Gravatar ↗</a>
+      </small>
+    {{/if}}
+
+    <hr class="my-4">
 
     <!-- Name -->
     <div class="form-group mb-3">
@@ -43,9 +95,11 @@
       <div class="form-group mb-3">
         <label for="edit-email">Email</label>
         <input type="email" id="edit-email" name="email" value="{{currentUser.email}}" class="form-control">
+        {{#unless hasCustomAvatar}}
         <small id="email-msg" class="form-text text-muted">
-          Changing your email will update your avatar to the Gravatar for the new email, or a random image if not set.
+          Changing your email will update your avatar to the Gravatar for the new email (or a random image if that email has no Gravatar).
         </small>
+        {{/unless}}
       </div>
 
       <!-- New Password -->

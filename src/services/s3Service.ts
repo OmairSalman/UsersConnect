@@ -2,12 +2,14 @@ import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client
 import crypto from "crypto";
 import logger from '../config/logger';
 
-export class S3Service {
+export class S3Service
+{
   private s3Client: S3Client;
   private bucketName: string;
   private publicUrl: string;
 
-  constructor() {
+  constructor()
+  {
     const endpoint = process.env.S3_ENDPOINT;
     const region = process.env.S3_REGION || "us-east-1";
 
@@ -31,7 +33,8 @@ export class S3Service {
         : `https://${this.bucketName}.s3.${region}.amazonaws.com`);
   }
 
-  async uploadPostImage(file: Express.Multer.File, userId: string): Promise<string> {
+  async uploadPostImage(file: Express.Multer.File, userId: string): Promise<string>
+  {
     const fileExtension = file.originalname.split(".").pop();
     const fileName = `posts/${userId}-${crypto.randomBytes(8).toString("hex")}.${fileExtension}`;
 
@@ -47,7 +50,8 @@ export class S3Service {
     return `${this.publicUrl}/${fileName}`;
   }
 
-  async deletePostImage(imageURL: string): Promise<void> {
+  async deletePostImage(imageURL: string): Promise<void>
+  {
     try {
       // Extract the key from the URL
       // URL format: https://bucket.s3.region.amazonaws.com/posts/userid-hash.ext
@@ -71,6 +75,47 @@ export class S3Service {
     } catch (error) {
       logger.error('Error deleting image from S3:', error);
       // Don't throw - we don't want to fail the whole operation if S3 delete fails
+    }
+  }
+
+  async uploadProfilePicture(file: Express.Multer.File, userId: string): Promise<string>
+  {
+    const fileExtension = file.originalname.split(".").pop();
+    const fileName = `profile-pictures/${userId}.${fileExtension}`;
+
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: fileName,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+    });
+
+    await this.s3Client.send(command);
+
+    return `${this.publicUrl}/${fileName}`;
+  }
+
+  async deleteProfilePicture(imageURL: string): Promise<void>
+  {
+    try {
+      const url = new URL(imageURL);
+      let key = url.pathname;
+
+      // Remove leading slash and bucket name if present in path
+      key = key.replace(/^\//, '');
+      if (key.startsWith(this.bucketName + '/')) {
+        key = key.substring(this.bucketName.length + 1);
+      }
+
+      const command = new DeleteObjectCommand({
+        Bucket: this.bucketName,
+        Key: key,
+      });
+
+      await this.s3Client.send(command);
+      logger.info(`Deleted profile picture from S3: ${key}`);
+    } catch (error) {
+      logger.error('Error deleting profile picture from S3:', error);
     }
   }
 }

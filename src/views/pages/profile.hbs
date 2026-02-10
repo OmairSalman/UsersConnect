@@ -4,14 +4,6 @@
       src="{{user.avatarURL}}"
       alt="{{user.name}}'s avatar"
     >
-    {{#if (isOwner currentUser._id user._id)}}
-      <a href="https://gravatar.com" target="_blank" class="avatar-overlay">
-        Change your avatar on Gravatar.com!
-      </a>
-      {{#unless hasCustomAvatar}}
-        <a href="https://gravatar.com" target="_blank" class="avatar-badge">Set Avatar</a>
-      {{/unless}}
-    {{/if}}
   </div>
 
   <div class="profile-info">
@@ -49,7 +41,7 @@
   data-total-pages="{{totalPages}}">
   {{#if (gt posts.length 0)}}
     {{#each posts}}
-      {{> postCard post=this currentUser=../currentUser}}
+      {{> postCard post=this currentUser=../currentUser s3Enabled=../s3Enabled}}
     {{/each}}
   {{else}}
     {{#if (isOwner currentUser._id user._id)}}

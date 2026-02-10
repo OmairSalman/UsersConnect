@@ -75,13 +75,7 @@ export default class WebController
     
         return response.redirect('/feed');
     }
-
-    create(request: Request, response: Response)
-    {
-        const s3Enabled = isS3Configured();
-        response.render('pages/createPost', {currentUser: request.user, s3Enabled: s3Enabled});
-    }
-
+    
     async profile(request: Request, response: Response)
     {
         const user = request.user;
@@ -89,10 +83,6 @@ export default class WebController
         let posts;
         if(user)
         {
-            const email = user.email.trim().toLowerCase();
-            const hash =  crypto.createHash('sha256').update(email).digest('hex');
-            const res = await fetch(`https://www.gravatar.com/avatar/${hash}?s=200&d=404`);
-
             const page = parseInt(asString(request.query.postsPage as any) ?? '1', 10) || 1;
             posts = await postService.getPostsByUserId(user._id, page, 10);
             if(posts)
@@ -104,7 +94,6 @@ export default class WebController
                 response.render('pages/profile', {
                     user: user, 
                     currentUser: user, 
-                    hasCustomAvatar: res.status !== 404, 
                     posts: posts, 
                     postsLikes: postsLikes, 
                     commentsLikes: commentsLikes, 
@@ -126,10 +115,6 @@ export default class WebController
         const user = await userService.getUserById(userId);
         if(user)
         {
-            const email = user.email.trim().toLowerCase();
-            const hash =  crypto.createHash('sha256').update(email).digest('hex');
-            const res = await fetch(`https://www.gravatar.com/avatar/${hash}?s=200&d=404`);
-            
             const posts = await postService.getPostsByUserId(userId.toString(), page, 10);
             if(posts)
             {
@@ -139,8 +124,7 @@ export default class WebController
                 const commentsLikes = await commentService.countUserCommentsLikes(userId.toString());
                 response.render('pages/profile', {
                     user: user, 
-                    currentUser: currentUser, 
-                    hasCustomAvatar: res.status !== 404, 
+                    currentUser: currentUser,
                     posts: posts, 
                     postsLikes: postsLikes, 
                     commentsLikes: commentsLikes, 
@@ -156,7 +140,8 @@ export default class WebController
     editProfile(request: Request, response: Response)
     {
         const user = request.user;
-        return response.render('pages/editProfile', {currentUser: user});
+        const s3Enabled = isS3Configured();
+        return response.render('pages/editProfile', {currentUser: user, s3Enabled: s3Enabled, hasCustomAvatar: !user?.avatarURL.includes('gravatar.com')});
     }
 
     async adminUsersPanel(request: Request, response: Response)

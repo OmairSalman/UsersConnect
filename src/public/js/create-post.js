@@ -83,11 +83,8 @@
   function init() {
     const form = document.querySelector(".create-post-form");
     if (!form) {
-      console.log('[CREATE-POST] Form not found');
       return;
     }
-
-    console.log('[CREATE-POST] Form found, attaching handlers');
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -97,13 +94,9 @@
     // Image preview handler
     const imageInput = document.getElementById('image');
     if (imageInput) {
-      console.log('[CREATE-POST] Image input found, attaching change handler');
       imageInput.addEventListener('change', function() {
-        console.log('[CREATE-POST] Image selected:', this.files[0]?.name);
         handleImagePreview(this);
       });
-    } else {
-      console.log('[CREATE-POST] Image input NOT found');
     }
 
     // Remove image button handler
@@ -113,7 +106,6 @@
     }
 
     const preview = document.getElementById('image-preview');
-    console.log('[CREATE-POST] Image preview element:', preview ? 'FOUND' : 'NOT FOUND');
   }
 
   if (document.readyState === "loading") {

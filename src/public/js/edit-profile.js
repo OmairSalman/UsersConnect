@@ -1,6 +1,140 @@
 document.addEventListener('DOMContentLoaded', function() {
   const verifyBtn = document.getElementById('verify-password-btn');
   const form = document.getElementById('edit-profile-form');
+  const userId = form.dataset.userid;
+
+  // Profile picture elements
+  const profilePictureInput = document.getElementById('profile-picture-input');
+  const previewSection = document.getElementById('profile-picture-preview');
+  const previewAvatar = document.getElementById('preview-avatar');
+  const currentAvatar = document.getElementById('current-avatar');
+  const saveBtn = document.getElementById('save-profile-picture-btn');
+  const cancelBtn = document.getElementById('cancel-profile-picture-btn');
+  const removeCustomBtn = document.getElementById('remove-custom-picture-btn');
+
+  // Check if using custom avatar on page load
+  const currentAvatarURL = currentAvatar.src;
+  if (removeCustomBtn && !currentAvatarURL.includes('gravatar.com')) {
+    removeCustomBtn.style.display = 'inline-block';
+  }
+
+  // Handle file selection
+  if (profilePictureInput) {
+    profilePictureInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        // Validate file size (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+          alert('File size must be less than 5MB');
+          this.value = '';
+          return;
+        }
+
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          previewAvatar.src = e.target.result;
+          previewSection.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Handle save profile picture
+  if (saveBtn) {
+    saveBtn.addEventListener('click', async function() {
+      const file = profilePictureInput.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append('profilePicture', file);
+
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Uploading...';
+
+      try {
+        const res = await fetch(`/users/${userId}/profile-picture`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          // Update current avatar
+          currentAvatar.src = data.user.avatarURL;
+          
+          // Hide preview
+          previewSection.style.display = 'none';
+          profilePictureInput.value = '';
+
+          // Show remove button if it exists
+          if (removeCustomBtn) {
+            removeCustomBtn.style.display = 'inline-block';
+          }
+
+          alert('Profile picture updated successfully!');
+          window.location.reload();
+        } else {
+          alert(data.message || 'Failed to upload profile picture');
+        }
+      } catch (error) {
+        console.error('Error uploading profile picture:', error);
+        alert('Error uploading profile picture');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '<i class="fa-solid fa-check"></i> Save Picture';
+      }
+    });
+  }
+
+  // Handle cancel
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', function() {
+      previewSection.style.display = 'none';
+      profilePictureInput.value = '';
+    });
+  }
+
+  // Handle remove custom picture
+  if (removeCustomBtn) {
+    removeCustomBtn.addEventListener('click', async function() {
+      if (!confirm('Are you sure you want to remove your custom profile picture? Your avatar will revert to Gravatar.')) {
+        return;
+      }
+
+      removeCustomBtn.disabled = true;
+      removeCustomBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Removing...';
+
+      try {
+        const res = await fetch(`/users/${userId}/profile-picture`, {
+          method: 'DELETE'
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          // Update current avatar to Gravatar
+          currentAvatar.src = data.user.avatarURL;
+          
+          // Hide remove button
+          removeCustomBtn.style.display = 'none';
+
+          alert('Profile picture removed. Now using Gravatar.');
+          window.location.reload();
+        } else {
+          alert(data.message || 'Failed to remove profile picture');
+        }
+      } catch (error) {
+        console.error('Error removing profile picture:', error);
+        alert('Error removing profile picture');
+      } finally {
+        removeCustomBtn.disabled = false;
+        removeCustomBtn.innerHTML = '<i class="fa-solid fa-times"></i> Remove Custom Picture';
+      }
+    });
+  }
 
   // Password verification logic
   if (verifyBtn) {
@@ -52,6 +186,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
       data.isEmailPublic = document.getElementById('isEmailPublic').checked;
 
+      data.avatarURL = currentAvatar.src;
+
       // Password match check
       const warning = document.getElementById('password-warning');
       if (warning) warning.textContent = ""; // Clear previous warning
@@ -74,7 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
 
-      const userId = form.dataset.userid;
       try {
         const res = await fetch(`/users/${userId}`, {
           method: 'PUT',
