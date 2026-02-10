@@ -23,5 +23,13 @@ declare namespace NodeJS {
     S3_BUCKET_NAME: string;
     S3_REGION: string;
     S3_PUBLIC_URL?: string;
+
+    SMTP_HOST: string;
+    SMTP_PORT: string;
+    SMTP_SECURE: string;
+    SMTP_USER: string;
+    SMTP_PASSWORD: string;
+    SMTP_FROM_NAME: string;
+    SMTP_FROM_EMAIL: string;
   }
 }
