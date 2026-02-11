@@ -11,8 +11,14 @@ AuthRouter.post('/login', authController.loginUser);
 
 AuthRouter.post('/register', UserValidator, authController.registerUser);
 
-AuthRouter.get('/logout', authController.logoutUser)
+AuthRouter.get('/logout', authController.logoutUser);
 
-AuthRouter.post('/verify-password', isAuthenticated, authController.verifyPassword)
+AuthRouter.post('/verify-password', isAuthenticated, authController.verifyPassword);
+
+AuthRouter.post('/forgot-password', authController.requestPasswordReset);
+
+AuthRouter.post('/verify-reset-code', authController.verifyResetCode);
+
+AuthRouter.post('/reset-password', authController.resetPasswordWithSession);
 
 export default AuthRouter;

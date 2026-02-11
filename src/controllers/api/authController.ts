@@ -120,4 +120,137 @@ export default class AuthController
         if(!user) return response.status(401).json({message: "Couldn't verify password", success: false});
         return response.status(200).json({message: "Password verified", success: true});
     }
+
+    async requestPasswordReset(request: Request, response: Response)
+    {
+        const { email } = request.body;
+
+        if (!email)
+        {
+            return response.status(400).json({ message: 'Email is required' });
+        }
+
+        const result = await authService.requestPasswordReset(email);
+
+        if (result === 'success')
+        {
+            // Always return success to prevent email enumeration
+            return response.status(200).json({
+                success: true,
+                message: 'If an account exists with this email, a reset code has been sent.'
+            });
+        }
+        else
+        {
+            return response.status(500).json({
+                success: false,
+                message: 'An error occurred. Please try again later.'
+            });
+        }
+    }
+
+    async verifyResetCode(request: Request, response: Response)
+    {
+        const { email, code } = request.body;
+
+        if (!email || !code)
+        {
+            return response.status(400).json({ message: 'Email and code are required' });
+        }
+
+        const sessionToken = await authService.verifyResetCode(email, code);
+
+        if (sessionToken)
+        {
+            // Set session cookie
+            response.cookie('resetSessionToken', sessionToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 5 * 60 * 1000 // 5 minutes
+            });
+
+            return response.status(200).json({
+                success: true,
+                message: 'Code verified successfully'
+            });
+        }
+        else
+        {
+            return response.status(401).json({
+                success: false,
+                message: 'Invalid or expired code'
+            });
+        }
+    }
+
+    async resetPasswordWithSession(request: Request, response: Response)
+    {
+        const { newPassword, confirmPassword } = request.body;
+        const sessionToken = request.cookies.resetSessionToken;
+
+        if (!sessionToken)
+        {
+            return response.status(401).json({
+                success: false,
+                message: 'No active reset session'
+            });
+        }
+
+        if (!newPassword || !confirmPassword)
+        {
+            return response.status(400).json({
+                success: false,
+                message: 'Password fields are required'
+            });
+        }
+
+        if (newPassword.length < 6)
+        {
+            return response.status(400).json({
+                success: false,
+                message: 'Password must be at least 6 characters'
+            });
+        }
+
+        if (newPassword !== confirmPassword)
+        {
+            return response.status(400).json({
+                success: false,
+                message: 'Passwords do not match'
+            });
+        }
+
+        const result = await authService.resetPasswordWithSession(sessionToken, newPassword);
+
+        if (result === 'success')
+        {
+            // Clear session cookie
+            response.clearCookie('resetSessionToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/'
+            });
+
+            return response.status(200).json({
+                success: true,
+                message: 'Password reset successfully'
+            });
+        }
+        else if (result === 'invalid-session')
+        {
+            return response.status(401).json({
+                success: false,
+                message: 'Session expired or invalid'
+            });
+        }
+        else
+        {
+            return response.status(500).json({
+                success: false,
+                message: 'An error occurred. Please try again.'
+            });
+        }
+    }
 }

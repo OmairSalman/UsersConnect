@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import { Post } from "../../entities/postEntity";
 import { isS3Configured } from "../../utils/s3Config";
 import { asString } from "../../utils/asString";
+import redisClient from "../../config/redis";
 
 const postService = new PostService();
 const commentService = new CommentService();
@@ -185,6 +186,51 @@ export default class WebController
     {
         const currentUser = await getUserFromToken(request, response);
         response.render('pages/contact', {currentUser: currentUser});
+    }
+
+    forgotPassword(request: Request, response: Response)
+    {
+        const accessToken = request.cookies.accessToken;
+        const refreshToken = request.cookies.refreshToken;
+        
+        // Redirect if already logged in
+        if (accessToken || refreshToken) {
+            return response.redirect('/feed');
+        }
+        
+        return response.render('pages/forgotPassword');
+    }
+
+    resetPassword(request: Request, response: Response)
+    {
+        const accessToken = request.cookies.accessToken;
+        const refreshToken = request.cookies.refreshToken;
+        
+        // Redirect if already logged in
+        if (accessToken || refreshToken) {
+            return response.redirect('/feed');
+        }
+        
+        return response.render('pages/resetPassword');
+    }
+
+    async resetPasswordConfirm(request: Request, response: Response)
+    {
+        const sessionToken = request.cookies.resetSessionToken;
+        
+        if (!sessionToken) {
+            // No session - redirect to forgot password
+            return response.redirect('/forgot-password');
+        }
+        
+        // Check if session is valid
+        const email = await redisClient.get(`reset-session:${sessionToken}`);
+        if (!email) {
+            // Session expired or invalid
+            return response.redirect('/forgot-password');
+        }
+        
+        return response.render('pages/resetPasswordConfirm');
     }
 }
 

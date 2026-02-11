@@ -19,8 +19,6 @@ WebRouter.get('/login', webController.login);
 
 WebRouter.get('/register', webController.register);
 
-//WebRouter.get('/create', webController.create);
-
 WebRouter.get('/profile', webController.profile);
 
 WebRouter.get('/profile/edit', webController.editProfile);
@@ -38,5 +36,11 @@ WebRouter.get('/privacy', webController.privacy);
 WebRouter.get('/terms', webController.terms);
 
 WebRouter.get('/contact', webController.contact);
+
+WebRouter.get('/forgot-password', webController.forgotPassword);
+
+WebRouter.get('/reset-password', webController.resetPassword);
+
+WebRouter.get('/reset-password/confirm', webController.resetPasswordConfirm);
 
 export default WebRouter;

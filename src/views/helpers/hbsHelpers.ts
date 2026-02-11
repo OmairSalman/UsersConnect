@@ -17,11 +17,7 @@ const hbsHelpers =
     return arr;
   },
   formatDate: (date: Date) => dayjs(date).format("MMM D, YYYY h:mm A"),
-  fromNow: (date: string) => {
-    const now = dayjs();
-    const d = dayjs(date);
-    return d.isAfter(now) ? "just now" : d.fromNow();
-  },
+  fromNow: (date: string) => dayjs(date).fromNow(),
   pluralize: (count: number, singular: string, plural: string) => count === 1 ? singular : plural,
   isLiked: (likes: {_id: string, name: string}[], userId: string) => {
     if (!likes || likes.length === 0) return false;
