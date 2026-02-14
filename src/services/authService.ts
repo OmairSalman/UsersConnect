@@ -28,9 +28,9 @@ export default class AuthService
         }
         catch(error)
         {
-            const errorDate = new Date();
-            const errorDateString = errorDate.toLocaleDateString();
-            const errorTimeString = errorDate.toLocaleTimeString();
+            
+            
+            
             logger.error(`Error logging in: `, error);
         }
         return 'error';
@@ -453,8 +453,13 @@ export default class AuthService
             await redisClient.del(`email-change:new:${userId}`);
             
             // Invalidate cache
-            const keys = await redisClient.keys(`user:${userId}:posts:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${userId}:posts:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
             
             return { success: true, message: 'Email changed successfully', newEmail };

@@ -22,9 +22,9 @@ export default class UserService
         }
         catch(error)
         {
-            const errorDate = new Date();
-            const errorDateString = errorDate.toLocaleDateString();
-            const errorTimeString = errorDate.toLocaleTimeString();
+            
+            
+            
             logger.error(`Error fetching users data from DB:\n`, error);
             return [];
         }
@@ -88,8 +88,13 @@ export default class UserService
             return "User not found";
         }
         
-        const keys = await redisClient.keys(`user:${userId}:posts:*`);
-        if (keys.length) await redisClient.del(keys);
+        const keys = await redisClient.keys(`usersconnect:user:${userId}:posts:*`);
+        if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
         await redisClient.del('feed:page:1');
 
         const safeUser = userToPublic(updatedUserRecord);
@@ -146,8 +151,13 @@ export default class UserService
             await User.update({ _id: userId }, { avatarURL: newAvatarURL });
             
             // Invalidate cache
-            const keys = await redisClient.keys(`user:${userId}:posts:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${userId}:posts:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
 
             const updatedUser = await User.findOneBy({ _id: userId });
@@ -158,7 +168,7 @@ export default class UserService
         }
         catch (error)
         {
-            const errorDate = new Date();
+            
             logger.error(`Error uploading profile picture:`, error);
             return null;
         }
@@ -186,8 +196,13 @@ export default class UserService
             await User.update({ _id: userId }, { avatarURL: gravatarURL });
 
             // Invalidate cache
-            const keys = await redisClient.keys(`user:${userId}:posts:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${userId}:posts:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
 
             const updatedUser = await User.findOneBy({ _id: userId });
@@ -198,7 +213,7 @@ export default class UserService
         }
         catch (error)
         {
-            const errorDate = new Date();
+            
             logger.error(`Error removing profile picture:`, error);
             return null;
         }

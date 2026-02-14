@@ -25,8 +25,13 @@ export default class CommentService
                 });
             if(!comment) return null;
 
-            const keys = await redisClient.keys(`user:${comment.post.author._id}:posts:page:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${comment.post.author._id}:posts:page:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
 
             const safeComment = commentToPublic(comment);
@@ -34,8 +39,8 @@ export default class CommentService
         }
         catch(error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error saving comment:`, error);
+            
+            logger.error(`Error saving comment:`, error);
             return null;
         }
     }
@@ -75,8 +80,13 @@ export default class CommentService
                 });
             if(!comment) return null;
 
-            const keys = await redisClient.keys(`user:${comment.post.author._id}:posts:page:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${comment.post.author._id}:posts:page:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
 
             const safeComment = commentToPublic(comment);
@@ -84,8 +94,8 @@ export default class CommentService
         }
         catch(error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error updating comment:`, error);
+            
+            logger.error(`Error updating comment:`, error);
             return null;
         }
     }
@@ -102,8 +112,13 @@ export default class CommentService
             if(!comment) return null;
             await comment.remove();
 
-            const keys = await redisClient.keys(`user:${comment.post.author._id}:posts:page:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${comment.post.author._id}:posts:page:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
             await redisClient.del(`user:${comment.author._id}:comments:likes:count`);
 
@@ -112,8 +127,8 @@ export default class CommentService
         }
         catch (error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error deleting comment:`, error);
+            
+            logger.error(`Error deleting comment:`, error);
             return null;
         }
     }
@@ -140,8 +155,13 @@ export default class CommentService
                 await comment.save();
             }
 
-            const keys = await redisClient.keys(`user:${comment.post.author._id}:posts:page:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${comment.post.author._id}:posts:page:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
             await redisClient.del(`user:${comment.author._id}:comments:likes:count`);
             const safeComment = commentToPublic(comment);
@@ -149,7 +169,7 @@ export default class CommentService
         }
         catch (error)
         {
-            const errorDate = new Date();
+            
             logger.error(`Error liking comment:`, error);
             return null;
         }
@@ -169,8 +189,13 @@ export default class CommentService
             comment.likes = comment.likes.filter(u => u._id !== user._id);
             await comment.save();
 
-            const keys = await redisClient.keys(`user:${comment.post.author._id}:posts:page:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${comment.post.author._id}:posts:page:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
             await redisClient.del(`user:${comment.author._id}:comments:likes:count`);
             const safeComment = commentToPublic(comment);
@@ -178,8 +203,8 @@ export default class CommentService
         }
         catch (error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error unliking comment:`, error);
+            
+            logger.error(`Error unliking comment:`, error);
             return null;
         }
     }
@@ -206,8 +231,13 @@ export default class CommentService
                 await comment.save();
             }
 
-            const keys = await redisClient.keys(`user:${comment.post.author._id}:posts:page:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${comment.post.author._id}:posts:page:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
             await redisClient.del(`user:${comment.author._id}:comments:likes:count`);
             const safeComment = commentToPublic(comment);
@@ -215,7 +245,7 @@ export default class CommentService
         }
         catch (error)
         {
-            const errorDate = new Date();
+            
             logger.error(`Error disliking comment:`, error);
             return null;
         }
@@ -235,8 +265,13 @@ export default class CommentService
             comment.dislikes = comment.dislikes.filter(u => u._id !== user._id);
             await comment.save();
 
-            const keys = await redisClient.keys(`user:${comment.post.author._id}:posts:page:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${comment.post.author._id}:posts:page:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
             await redisClient.del(`user:${comment.author._id}:comments:likes:count`);
             const safeComment = commentToPublic(comment);
@@ -244,7 +279,7 @@ export default class CommentService
         }
         catch (error)
         {
-            const errorDate = new Date();
+            
             logger.error(`Error undisliking comment:`, error);
             return null;
         }

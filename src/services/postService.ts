@@ -36,8 +36,8 @@ export default class PostService
         }
         catch (error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error fetching posts:\n`, error);
+            
+            logger.error(`Error fetching posts:\n`, error);
             return [];
         }
     }
@@ -57,8 +57,8 @@ export default class PostService
         catch
         (error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error fetching post by ID:`, error);
+            
+            logger.error(`Error fetching post by ID:`, error);
             return null;
         }
     }
@@ -73,8 +73,13 @@ export default class PostService
                 imageURL: newPost.imageURL, // ADD THIS LINE
                 author_id: authorId
             });
-            const keys = await redisClient.keys(`user:${authorId}:posts:page:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${authorId}:posts:page:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
 
             const post = await Post.findOneBy({_id: insertResult.identifiers[0]._id});
@@ -83,8 +88,8 @@ export default class PostService
         }
         catch (error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error saving post:`, error);
+            
+            logger.error(`Error saving post:`, error);
             return null;
         }
     }
@@ -129,8 +134,13 @@ export default class PostService
             const post = await Post.findOneBy({ _id: postId });
             if(!post) return null;
 
-            const keys = await redisClient.keys(`user:${post.author._id}:posts:page:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${post.author._id}:posts:page:*`);
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
             await redisClient.del('feed:page:1');
 
             const safePost = postToPublic(post);
@@ -138,8 +148,8 @@ export default class PostService
         }
         catch (error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error updating post:`, error);
+            
+            logger.error(`Error updating post:`, error);
             return null;
         }
     }
@@ -162,8 +172,14 @@ export default class PostService
                 await redisClient.del(`user:${comment.author._id}:comments:likes:count`);
             }
 
-            const keys = await redisClient.keys(`user:${post.author._id}:posts:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${post.author._id}:posts:*`);
+
+if (keys.length > 0) {
+    // Strip the prefix from each key before deleting
+    const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+    await redisClient.del(...keysWithoutPrefix);
+}
 
             await redisClient.del('feed:page:1');
             await redisClient.del(`user:${post.author._id}:comments:likes:count`);
@@ -173,8 +189,8 @@ export default class PostService
         }
         catch (error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error deleting post:`, error);
+            
+            logger.error(`Error deleting post:`, error);
             return null;
         }
     }
@@ -205,8 +221,8 @@ export default class PostService
         }
         catch (error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error fetching posts by user:\n`, error);
+            
+            logger.error(`Error fetching posts by user:\n`, error);
             return null;
         }
     }
@@ -256,8 +272,14 @@ export default class PostService
                 await post.save();
             }
 
-            const keys = await redisClient.keys(`user:${post.author._id}:posts:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${post.author._id}:posts:*`);
+
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
 
             await redisClient.del('feed:page:1');
             const safePost = postToPublic(post);
@@ -265,7 +287,7 @@ export default class PostService
         }
         catch (error)
         {
-            const errorDate = new Date();
+            
             logger.error(`Error liking post:`, error);
             return null;
         }
@@ -284,8 +306,14 @@ export default class PostService
             post.likes = post.likes.filter(u => u._id !== user._id);
             await post.save();
 
-            const keys = await redisClient.keys(`user:${post.author._id}:posts:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${post.author._id}:posts:*`);
+
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
 
             await redisClient.del('feed:page:1');
             const safePost = postToPublic(post);
@@ -293,8 +321,8 @@ export default class PostService
         }
         catch (error)
         {
-            const errorDate = new Date();
-            logger.error(`[${errorDate.toLocaleDateString()} @ ${errorDate.toLocaleTimeString()}] Error unliking post:`, error);
+            
+            logger.error(`Error unliking post:`, error);
             return null;
         }
     }
@@ -320,8 +348,14 @@ export default class PostService
                 await post.save();
             }
 
-            const keys = await redisClient.keys(`user:${post.author._id}:posts:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${post.author._id}:posts:*`);
+
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
 
             await redisClient.del('feed:page:1');
             const safePost = postToPublic(post);
@@ -329,7 +363,7 @@ export default class PostService
         }
         catch (error)
         {
-            const errorDate = new Date();
+            
             logger.error(`Error disliking post:`, error);
             return null;
         }
@@ -348,8 +382,14 @@ export default class PostService
             post.dislikes = post.dislikes.filter(u => u._id !== user._id);
             await post.save();
 
-            const keys = await redisClient.keys(`user:${post.author._id}:posts:*`);
-            if (keys.length) await redisClient.del(keys);
+            const keys = await redisClient.keys(`usersconnect:user:${post.author._id}:posts:*`);
+
+            if (keys.length > 0) {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+
+                await redisClient.del(...keysWithoutPrefix);
+            }
 
             await redisClient.del('feed:page:1');
             const safePost = postToPublic(post);
@@ -357,7 +397,7 @@ export default class PostService
         }
         catch (error)
         {
-            const errorDate = new Date();
+            
             logger.error(`Error undisliking post:`, error);
             return null;
         }
