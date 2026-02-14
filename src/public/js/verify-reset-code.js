@@ -2,9 +2,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const form = document.getElementById('verify-code-form');
   const errorDiv = document.getElementById('error-message');
   const submitBtn = document.getElementById('submit-btn');
+  const resendBtn = document.getElementById('resend-btn');
   const codeInput = document.getElementById('code');
   const emailInput = document.getElementById('email');
-  const displayEmailInput = document.getElementById('display-email');
 
   if (!form) return;
 
@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return;
   }
 
-  // Set email in both fields
+  // Set email in hidden field
   emailInput.value = email;
 
   // Auto-format code input (numbers only)
@@ -39,6 +39,47 @@ document.addEventListener('DOMContentLoaded', function() {
     this.value = this.value.replace(/[^0-9]/g, '');
   });
 
+  // Handle resend button
+  if (resendBtn) {
+    resendBtn.addEventListener('click', async function() {
+      resendBtn.disabled = true;
+      resendBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+      errorDiv.style.display = 'none';
+
+      try {
+        const res = await fetch('/auth/forgot-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          errorDiv.textContent = 'Code sent! Check your email.';
+          errorDiv.className = 'text-center text-success mb-3';
+          errorDiv.style.display = 'block';
+          
+          setTimeout(() => {
+            errorDiv.style.display = 'none';
+            errorDiv.className = 'text-center text-danger mb-3';
+          }, 3000);
+        } else {
+          errorDiv.textContent = data.message || 'Failed to resend code';
+          errorDiv.style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error resending code:', error);
+        errorDiv.textContent = 'Error sending code';
+        errorDiv.style.display = 'block';
+      } finally {
+        resendBtn.disabled = false;
+        resendBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> Resend Code';
+      }
+    });
+  }
+
+  // Handle form submission
   form.addEventListener('submit', async function(e) {
     e.preventDefault();
     

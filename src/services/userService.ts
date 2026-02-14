@@ -6,6 +6,7 @@ import redisClient from "../config/redis";
 import bcrypt from 'bcrypt';
 import logger from '../config/logger';
 import { S3Service } from "./s3Service";
+import { isEmailVerified } from "../middlewares/auth/isEmailVerified";
 
 const s3Service = new S3Service();
 
@@ -37,8 +38,25 @@ export default class UserService
         return safeUser;
     }
 
-    async updateUser(userId: string, updatedUser: {name: string, email: string, isEmailPublic?: boolean, newPassword: string, confirmPassword: string, avatarURL: string}): Promise<PublicUser | string>
+    async updateUser(userId: string, updatedUser: {name: string, email: string, isEmailPublic?: boolean, isEmailVerified?: boolean, currentPassword?: string, newPassword?: string, confirmPassword?: string, avatarURL: string}): Promise<PublicUser | string>
     {
+        const user = await User.findOneBy({ _id: userId });
+        if (!user) {
+            return "User not found";
+        }
+
+        // If trying to change password, verify current password first
+        if (updatedUser.newPassword && updatedUser.newPassword.trim() !== "") {
+            if (!updatedUser.currentPassword) {
+                return "Current password is required to change password";
+            }
+            
+            const passwordMatch = await bcrypt.compare(updatedUser.currentPassword, user.password);
+            if (!passwordMatch) {
+                return "Current password is incorrect";
+            }
+        }
+
         const updateData: any = {
             name: updatedUser.name,
             email: updatedUser.email
@@ -64,17 +82,17 @@ export default class UserService
         }
 
         await User.update({ _id: userId }, updateData);
-        const user = await User.findOneBy({ _id: userId });
-        if (!user)
+        const updatedUserRecord = await User.findOneBy({ _id: userId });
+        if (!updatedUserRecord)
         {
             return "User not found";
         }
         
-        const keys = await redisClient.keys(`user:${user._id}:posts:*`);
+        const keys = await redisClient.keys(`user:${userId}:posts:*`);
         if (keys.length) await redisClient.del(keys);
         await redisClient.del('feed:page:1');
 
-        const safeUser = userToPublic(user);
+        const safeUser = userToPublic(updatedUserRecord);
         return safeUser;
     }
 

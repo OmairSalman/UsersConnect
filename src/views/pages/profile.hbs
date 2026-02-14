@@ -9,17 +9,39 @@
   <div class="profile-info">
     <h1>{{user.name}}</h1>
     {{#if (isOwner currentUser._id user._id)}}
-      <p>{{user.email}}</p>
+      <p class="mb-1">
+        {{user.email}}
+        
+        <!-- Verification Badge (only visible to owner) -->
+        {{#if user.isEmailVerified}}
+          <i class="fa-solid fa-circle-check text-success ms-2" title="Email Verified"></i>
+        {{else}}
+          <i class="fa-solid fa-circle-exclamation ms-2" style="color: #dc3545;" title="Email Not Verified"></i>
+        {{/if}}
+        
+        <!-- Privacy Badge (only visible to owner) -->
+        {{#if user.isEmailPublic}}
+          <i class="fa-solid fa-globe text-muted ms-1" title="Email is Public"></i>
+        {{else}}
+          <i class="fa-solid fa-lock text-muted ms-1" title="Email is Private"></i>
+        {{/if}}
+      </p>
+      
+      <!-- Action buttons -->
+      {{#unless user.isEmailVerified}}
+        <button type="button" class="btn btn-sm btn-success mb-2" id="verify-email-btn-profile">
+          <i class="fa-solid fa-envelope"></i> Verify Email
+        </button>
+        <br>
+      {{/unless}}
+      
+      <a href="/profile/edit" class="btn btn-outline-primary edit-profile-btn">
+        <i class="fa-solid fa-pen"></i> Edit profile
+      </a>
     {{else}}
       {{#if user.isEmailPublic}}
         <p>{{user.email}}</p>
       {{/if}}
-    {{/if}}
-
-    {{#if (isOwner currentUser._id user._id)}}
-      <a href="/profile/edit" class="btn btn-outline-primary edit-profile-btn">
-        <i class="fa-solid fa-pen"></i> Edit profile
-      </a>
     {{/if}}
 
     <div class="profile-stats">
@@ -69,3 +91,18 @@
     </ul>
   {{/if}}
 </nav>
+
+<!-- Profile page specific JS -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const verifyEmailBtn = document.getElementById('verify-email-btn-profile');
+  
+  if (verifyEmailBtn) {
+    verifyEmailBtn.addEventListener('click', function() {
+      if (typeof window.openVerifyEmailModal === 'function') {
+        window.openVerifyEmailModal();
+      }
+    });
+  }
+});
+</script>

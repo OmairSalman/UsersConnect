@@ -85,7 +85,6 @@ export class EmailService {
     }
   }
 
-
   /**
    * Send an email verification email with a 6-digit code
    * @param to - Recipient email address
@@ -112,6 +111,60 @@ export class EmailService {
       return true;
     } catch (error) {
       logger.error('❌ Failed to send verification email:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send verification code to current email for email change
+   */
+  async sendEmailChangeVerifyCurrent(
+    to: string,
+    name: string,
+    verificationCode: string
+  ): Promise<boolean> {
+    try {
+      const html = this.renderTemplate('emailChangeVerifyCurrent', { name, verificationCode });
+
+      const mailOptions = {
+        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+        to: to,
+        subject: `Email Change Request: ${verificationCode} - UsersConnect`,
+        html: html,
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      logger.info(`✅ Email change verification (current) sent to ${to}`);
+      return true;
+    } catch (error) {
+      logger.error('❌ Failed to send email change verification (current):', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send verification code to new email for email change
+   */
+  async sendEmailChangeVerifyNew(
+    to: string,
+    name: string,
+    verificationCode: string
+  ): Promise<boolean> {
+    try {
+      const html = this.renderTemplate('emailChangeVerifyNew', { name, verificationCode });
+
+      const mailOptions = {
+        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+        to: to,
+        subject: `Verify Your New Email: ${verificationCode} - UsersConnect`,
+        html: html,
+      };
+
+      await this.transporter.sendMail(mailOptions);
+      logger.info(`✅ Email change verification (new) sent to ${to}`);
+      return true;
+    } catch (error) {
+      logger.error('❌ Failed to send email change verification (new):', error);
       return false;
     }
   }

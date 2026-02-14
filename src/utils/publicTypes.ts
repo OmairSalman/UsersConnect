@@ -3,6 +3,7 @@ export type PublicUser = {
   name: string;
   email: string;
   isEmailPublic: boolean;
+  isEmailVerified: boolean;
   avatarURL: string;
   isAdmin: boolean;
 };

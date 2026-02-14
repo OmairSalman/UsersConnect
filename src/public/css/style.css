@@ -193,9 +193,33 @@ footer a:hover {
   color: var(--text-muted);
 }
 
-/* ============================
-   MODALS
-   ============================ */
+/* Custom confirm modal styles (NOT Bootstrap modals) */
+#custom-confirm-modal.modal {
+  position: fixed;
+  z-index: 9999;
+  left: 0; top: 0; width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+}
+
+#custom-confirm-modal .modal-content {
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  min-width: 320px;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  text-align: center;
+}
+
+#custom-confirm-modal .modal-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/* Bootstrap modal styling */
 .modal-content {
   border-radius: 15px;
   border: 2px solid var(--brand-start);
@@ -930,34 +954,6 @@ footer a:hover {
 
 .icon-btn.danger:hover {
   color: #dc3545; /* bootstrap red */
-}
-
-/* Modal overlay */
-.modal {
-  position: fixed;
-  z-index: 9999;
-  left: 0; top: 0; width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.5);
-  display: flex; align-items: center; justify-content: center;
-}
-
-/* Modal box */
-.modal-content {
-  background: #fff;
-  padding: 2rem 2.5rem;
-  border-radius: 12px;
-  min-width: 320px;
-  max-width: 90vw;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  text-align: center;
-}
-
-/* Modal actions */
-.modal-actions {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
 }
 
 /* Use your project's button styles */

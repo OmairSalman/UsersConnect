@@ -36,20 +36,47 @@ export default class AuthService
         return 'error';
     }
 
-    async registerUser(newUser: User): Promise<PublicUser | null>
+    async registerUser(newUser: User): Promise<{ success: boolean; message?: string; user?: PublicUser }>
     {
-        const user = new User();
-        user.name = newUser.name;
-        user.email = newUser.email;
-        user.isAdmin = false;
+        try
+        {
+            // Check if email already exists
+            const existingUser = await User.findOneBy({ email: newUser.email });
+            
+            if (existingUser) {
+                return {
+                    success: false,
+                    message: 'An account with this email already exists'
+                };
+            }
 
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(newUser.password, salt);
-        const hash = crypto.createHash('sha256').update(user.email.trim()).digest('hex');
-        user.avatarURL = `https://gravatar.com/avatar/${hash}?s=256&d=initials`;
-        await user.save();
-        const safeUser = userToPublic(user);
-        return safeUser;
+            const user = new User();
+            user.name = newUser.name;
+            user.email = newUser.email;
+            user.isAdmin = false;
+
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(newUser.password, salt);
+            const hash = crypto.createHash('sha256').update(user.email.trim()).digest('hex');
+            user.avatarURL = `https://gravatar.com/avatar/${hash}?s=256&d=initials`;
+            
+            await user.save();
+            
+            const safeUser = userToPublic(user);
+            
+            return {
+                success: true,
+                user: safeUser
+            };
+        }
+        catch (error)
+        {
+            logger.error('Error registering user:', error);
+            return {
+                success: false,
+                message: 'Failed to register user'
+            };
+        }
     }
 
     async verifyPassword(userId: string, password: string): Promise<PublicUser | null>
@@ -191,6 +218,251 @@ export default class AuthService
         {
             logger.error('Error in resetPasswordWithSession:', error);
             return 'error';
+        }
+    }
+
+    async requestEmailVerification(userId: string): Promise<{ success: boolean; message: string }>
+    {
+        try
+        {
+            const user = await User.findOneBy({ _id: userId });
+            if (!user) {
+                return { success: false, message: 'User not found' };
+            }
+
+            if (user.isEmailVerified) {
+                return { success: false, message: 'Email already verified' };
+            }
+
+            // Generate 6-digit code
+            const code = crypto.randomInt(100000, 999999).toString();
+            
+            // Store in Redis with 10-minute TTL
+            await redisClient.setex(`email-verification:${user.email}`, 600, code);
+            
+            // Send email
+            const emailSent = await emailService.sendVerificationEmail(user.email, user.name, code);
+            
+            if (!emailSent) {
+                return { success: false, message: 'Failed to send verification email' };
+            }
+            
+            logger.info(`Email verification code sent to ${user.email}`);
+            return { success: true, message: 'Verification code sent to your email' };
+        }
+        catch (error)
+        {
+            logger.error('Error requesting email verification:', error);
+            return { success: false, message: 'Failed to send verification code' };
+        }
+    }
+
+    async verifyEmailCode(userId: string, code: string): Promise<{ success: boolean; message: string }>
+    {
+        try
+        {
+            const user = await User.findOneBy({ _id: userId });
+            if (!user) {
+                return { success: false, message: 'User not found' };
+            }
+
+            if (user.isEmailVerified) {
+                return { success: false, message: 'Email already verified' };
+            }
+
+            // Get stored code from Redis
+            const storedCode = await redisClient.get(`email-verification:${user.email}`);
+            
+            if (!storedCode || storedCode !== code) {
+                return { success: false, message: 'Invalid or expired code' };
+            }
+
+            // Mark email as verified
+            user.isEmailVerified = true;
+            await user.save();
+
+            // Clear the verification code
+            await redisClient.del(`email-verification:${user.email}`);
+            
+            logger.info(`Email verified for user ${user.email}`);
+            return { success: true, message: 'Email verified successfully!' };
+        }
+        catch (error)
+        {
+            logger.error('Error verifying email code:', error);
+            return { success: false, message: 'Verification failed' };
+        }
+    }
+
+    async requestEmailChange(userId: string, currentEmail: string): Promise<{ success: boolean; message: string }>
+    {
+        try
+        {
+            // Get user name for email
+            const user = await User.findOneBy({ _id: userId });
+            if (!user) {
+                return { success: false, message: 'User not found' };
+            }
+
+            // Generate 6-digit code
+            const code = crypto.randomInt(100000, 999999).toString();
+            
+            // Store in Redis with 10-minute TTL
+            await redisClient.setex(`email-change:current:${currentEmail}`, 600, code);
+            
+            // Send email to CURRENT address
+            const emailSent = await emailService.sendEmailChangeVerifyCurrent(currentEmail, user.name, code);
+            
+            if (!emailSent) {
+                return { success: false, message: 'Failed to send verification email' };
+            }
+            
+            return { success: true, message: 'Verification code sent to your current email' };
+        }
+        catch (error)
+        {
+            logger.error('Error requesting email change:', error);
+            return { success: false, message: 'Failed to send verification code' };
+        }
+    }
+
+    async requestNewEmailVerification(userId: string, newEmail: string, tempToken: string): Promise<{ success: boolean; message: string }>
+    {
+        try
+        {
+            // Verify temp token
+            const storedToken = await redisClient.get(`email-change:session:${userId}`);
+            
+            if (!storedToken || storedToken !== tempToken)
+            {
+                return { success: false, message: 'Session expired. Please start over.' };
+            }
+            
+            // Check if new email already exists
+            const existingUser = await User.findOneBy({ email: newEmail });
+            if (existingUser)
+            {
+                return { success: false, message: 'This email is already in use by another account' };
+            }
+            
+            // Get user name for email
+            const user = await User.findOneBy({ _id: userId });
+            if (!user) {
+                return { success: false, message: 'User not found' };
+            }
+            
+            // Generate 6-digit code
+            const code = crypto.randomInt(100000, 999999).toString();
+            
+            // Store new email and code with 10-minute TTL
+            await redisClient.setex(`email-change:new:${userId}`, 600, JSON.stringify({ newEmail, code }));
+            
+            // Send email to NEW address
+            const emailSent = await emailService.sendEmailChangeVerifyNew(newEmail, user.name, code);
+            
+            if (!emailSent) {
+                return { success: false, message: 'Failed to send verification email' };
+            }
+            
+            logger.info(`New email verification code sent to ${newEmail} for user ${userId}`);
+            return { success: true, message: 'Verification code sent to new email' };
+        }
+        catch (error)
+        {
+            logger.error('Error requesting new email verification:', error);
+            return { success: false, message: 'Failed to send verification code' };
+        }
+    }
+
+    async verifyCurrentEmail(email: string, code: string, userId: string): Promise<{ success: boolean; message: string; tempToken?: string }>
+    {
+        try
+        {
+            const storedCode = await redisClient.get(`email-change:current:${email}`);
+            
+            if (!storedCode || storedCode !== code)
+            {
+                return { success: false, message: 'Invalid or expired code' };
+            }
+            
+            // Generate temporary session token
+            const tempToken = crypto.randomBytes(32).toString('hex');
+            
+            // Store temp token with 5-minute TTL
+            await redisClient.setex(`email-change:session:${userId}`, 300, tempToken);
+            
+            // Clear the verification code
+            await redisClient.del(`email-change:current:${email}`);
+            
+            return { success: true, message: 'Current email verified', tempToken };
+        }
+        catch (error)
+        {
+            logger.error('Error verifying current email:', error);
+            return { success: false, message: 'Verification failed' };
+        }
+    }
+
+    async confirmEmailChange(userId: string, code: string, tempToken: string): Promise<{ success: boolean; message: string; newEmail?: string }>
+    {
+        try
+        {
+            // Verify temp token
+            const storedToken = await redisClient.get(`email-change:session:${userId}`);
+            
+            if (!storedToken || storedToken !== tempToken)
+            {
+                return { success: false, message: 'Session expired. Please start over.' };
+            }
+            
+            // Get stored new email and code
+            const storedData = await redisClient.get(`email-change:new:${userId}`);
+            
+            if (!storedData)
+            {
+                return { success: false, message: 'Verification expired. Please start over.' };
+            }
+            
+            const { newEmail, code: storedCode } = JSON.parse(storedData);
+            
+            if (code !== storedCode)
+            {
+                return { success: false, message: 'Invalid code' };
+            }
+            
+            // Update user email
+            const user = await User.findOneBy({ _id: userId });
+            if (!user)
+            {
+                return { success: false, message: 'User not found' };
+            }
+            
+            user.email = newEmail;
+            
+            // Update Gravatar URL if using Gravatar
+            if (user.avatarURL.includes('gravatar.com'))
+            {
+                const hash = crypto.createHash('sha256').update(newEmail.trim().toLowerCase()).digest('hex');
+                user.avatarURL = `https://gravatar.com/avatar/${hash}?s=256&d=initials`;
+            }
+            
+            await user.save();
+            
+            // Clean up Redis keys
+            await redisClient.del(`email-change:session:${userId}`);
+            await redisClient.del(`email-change:new:${userId}`);
+            
+            // Invalidate cache
+            const keys = await redisClient.keys(`user:${userId}:posts:*`);
+            if (keys.length) await redisClient.del(keys);
+            await redisClient.del('feed:page:1');
+            
+            return { success: true, message: 'Email changed successfully', newEmail };
+        }
+        catch (error)
+        {
+            logger.error('Error confirming email change:', error);
+            return { success: false, message: 'Failed to change email' };
         }
     }
 }

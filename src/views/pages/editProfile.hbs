@@ -1,10 +1,18 @@
 <div class="edit-profile-card">
+  <!-- Back to Profile Button -->
+  <a href="/profile" class="btn btn-link mb-3 p-0">
+    <i class="fa-solid fa-arrow-left"></i> Back to Profile
+  </a>
+
   <h1>Edit Profile</h1>
-  <form id="edit-profile-form" method="POST" action="/users/{{currentUser._id}}" autocomplete="off" data-userid="{{currentUser._id}}">
-    <!-- Avatar Section -->
-    <div class="form-group mb-4">
-      <label class="form-label fw-semibold">Profile Picture</label>
-      <div class="d-flex align-items-center mb-3">
+
+  <!-- Hidden form for userId AND email -->
+  <form id="edit-profile-form" data-userid="{{currentUser._id}}" data-useremail="{{currentUser.email}}" style="display:none;"></form>
+
+  <!-- Avatar Section -->
+  <div class="form-group mb-4">
+    <label class="form-label fw-semibold">Profile Picture</label>
+    <div class="d-flex align-items-center mb-3">
       <img 
         id="current-avatar"
         src="{{currentUser.avatarURL}}" 
@@ -35,7 +43,7 @@
     </div>
 
     {{#if s3Enabled}}
-      <!-- Preview Section (hidden by default) -->
+      <!-- Preview Section -->
       <div id="profile-picture-preview" style="display: none;">
         <div class="card p-3 mb-3">
           <label class="form-label small fw-semibold">Preview:</label>
@@ -61,62 +69,103 @@
         Don't have a custom picture? <a href="https://gravatar.com" target="_blank">Change avatar on Gravatar ↗</a>
       </small>
     {{/if}}
+  </div>
 
-    <hr class="my-4">
+  <hr class="my-4">
 
-    <!-- Name -->
-    <div class="form-group mb-3">
-      <label for="edit-name">Name</label>
-      <input type="text" id="edit-name" name="name" value="{{currentUser.name}}" class="form-control" required>
+  <!-- Name Section -->
+  <div class="form-group mb-4">
+    <label for="edit-name" class="form-label fw-semibold">Name</label>
+    <div class="input-group">
+      <input type="text" id="edit-name" name="name" value="{{currentUser.name}}" class="form-control" required data-original="{{currentUser.name}}">
+      <button type="button" id="update-name-btn" class="btn btn-primary" disabled>
+        <i class="fa-solid fa-check"></i> Update Name
+      </button>
+    </div>
+  </div>
+
+  <hr class="my-4">
+
+  <!-- Email Section -->
+  <div class="form-group mb-4">
+    <label class="form-label fw-semibold">
+      Email Address
+      {{#unless currentUser.isEmailVerified}}
+        <span class="text-danger">- Unverified</span>
+      {{/unless}}
+    </label>
+    <div class="d-flex align-items-center gap-2 mb-2">
+      <span id="user-email-display" class="text-muted">{{currentUser.email}}</span>
+      
+      {{#unless currentUser.isEmailVerified}}
+        <button type="button" class="btn btn-sm btn-success" onclick="window.openVerifyEmailModal()">
+          <i class="fa-solid fa-envelope-circle-check"></i> Verify Email
+        </button>
+      {{/unless}}
+      
+      {{#if currentUser.isEmailVerified}}
+        <button type="button" id="change-email-btn" class="btn btn-sm btn-outline-primary">
+          <i class="fa-solid fa-pen"></i> Change Email
+        </button>
+      {{/if}}
     </div>
 
-    <div class="form-group mb-3">
-      <div class="form-check">
-        <input type="checkbox" class="form-check-input" id="isEmailPublic" name="isEmailPublic" {{#if currentUser.isEmailPublic}}checked{{/if}}>
-        <label class="form-check-label" for="isEmailPublic">
-          Make my email visible on my profile
-        </label>
-      </div>
-      <small class="form-text text-muted">When unchecked, only you can see your email address.</small>
-    </div>
-
-    <!-- Section: Sensitive info (locked by password) -->
-    <div class="form-group mb-3">
-      <label for="current-password">Enter your current password to edit email or password</label>
-      <div class="d-flex">
-        <input type="password" id="current-password" name="currentPassword" class="form-control me-2">
-        <button type="button" id="verify-password-btn" class="btn btn-secondary">Verify</button>
-      </div>
-      <small id="verify-password-msg" class="form-text"></small>
-    </div>
-
-    <fieldset id="sensitive-fields" disabled>
-      <!-- Email -->
-      <div class="form-group mb-3">
-        <label for="edit-email">Email</label>
-        <input type="email" id="edit-email" name="email" value="{{currentUser.email}}" class="form-control">
-        {{#unless hasCustomAvatar}}
-        <small id="email-msg" class="form-text text-muted">
-          Changing your email will update your avatar to the Gravatar for the new email (or a random image if that email has no Gravatar).
-        </small>
+    <!-- Email Privacy -->
+    <div class="form-check">
+      <input 
+        type="checkbox" 
+        class="form-check-input" 
+        id="isEmailPublic" 
+        name="isEmailPublic" 
+        {{#if currentUser.isEmailPublic}}checked{{/if}} 
+        {{#unless currentUser.isEmailVerified}}disabled{{/unless}}
+        data-original="{{currentUser.isEmailPublic}}">
+      <label class="form-check-label {{#unless currentUser.isEmailVerified}}text-muted{{/unless}}" for="isEmailPublic">
+        Make my email visible on my profile
+        {{#unless currentUser.isEmailVerified}}
+          <i class="fa-solid fa-lock ms-1" title="Verify your email to enable this option"></i>
         {{/unless}}
-      </div>
+      </label>
+      <button type="button" id="update-email-privacy-btn" class="btn btn-sm btn-primary ms-2" style="display: none;">
+        <i class="fa-solid fa-check"></i> Save
+      </button>
+    </div>
+    {{#if currentUser.isEmailVerified}}
+      <small class="form-text text-muted">When unchecked, only you can see your email address.</small>
+    {{else}}
+      <small class="form-text text-warning">
+        <i class="fa-solid fa-exclamation-triangle"></i> Verify your email address to control email visibility.
+      </small>
+    {{/if}}
+  </div>
 
-      <!-- New Password -->
-      <div class="form-group mb-3">
-        <label for="new-password">New Password</label>
-        <input type="password" id="new-password" name="newPassword" class="form-control">
-      </div>
-      <div class="form-group mb-3">
-        <label for="confirm-password">Confirm New Password</label>
-        <input type="password" id="confirm-password" name="confirmPassword" class="form-control">
-        <small id="password-warning" class="form-text text-danger"></small>
-      </div>
-    </fieldset>
+  <hr class="my-4">
 
-    <button type="submit" class="btn btn-primary mt-2">Save Changes</button>
-    <a href="/profile" class="btn btn-link mt-2">Cancel</a>
-  </form>
+  <!-- Password Section -->
+  <div class="form-group mb-4">
+    <label class="form-label fw-semibold">Change Password</label>
+    
+    <div class="mb-3">
+      <label for="current-password" class="form-label">Current Password</label>
+      <input type="password" id="current-password" name="currentPassword" class="form-control" placeholder="Required to change password">
+    </div>
+
+    <div class="mb-3">
+      <label for="new-password" class="form-label">New Password</label>
+      <input type="password" id="new-password" name="newPassword" class="form-control" placeholder="At least 6 characters">
+    </div>
+
+    <div class="mb-3">
+      <label for="confirm-password" class="form-label">Confirm New Password</label>
+      <input type="password" id="confirm-password" name="confirmPassword" class="form-control" placeholder="Re-enter your new password">
+    </div>
+
+    <small id="password-error" class="form-text text-danger d-block mb-2" style="display: none;"></small>
+
+    <button type="button" id="update-password-btn" class="btn btn-primary">
+      <i class="fa-solid fa-key"></i> Update Password
+    </button>
+  </div>
 </div>
 
 <script src="/js/edit-profile.js"></script>

@@ -79,76 +79,92 @@ function hideDislikePopup() {
   document.getElementById('dislike-popup').style.display = 'none';
 }
 
+// Check if response requires email verification
+function checkVerificationRequired(response, data) {
+  if (response.status === 403 && data && data.requiresVerification) {
+    if (typeof window.showPleaseVerifyModal === 'function') {
+      window.showPleaseVerifyModal();
+    }
+    return true;
+  }
+  return false;
+}
+
 (() => {
   async function handleLikeForm(form, button)
-{
-  try
   {
-    const url = form.action;
-    const method = button.dataset.liked === "true" ? "delete" : "post";
+    try
+    {
+      const url = form.action;
+      const method = button.dataset.liked === "true" ? "delete" : "post";
 
-    const response = await fetch(url, {
-      method: method.toUpperCase(),
-      headers: {
-        'Accept': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
+      const response = await fetch(url, {
+        method: method.toUpperCase(),
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+
+      // Check for verification requirement BEFORE throwing error
+      if (!response.ok) {
+        const data = await response.json();
+        if (checkVerificationRequired(response, data)) {
+          return; // Stop execution if verification required
+        }
+        throw new Error(`Server error: ${response.status}`);
       }
-    });
 
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status}`);
+      const data = await response.json();
+
+      // Get count elements
+      let likeCount, dislikeCount;
+      if(form.dataset.postId)
+      {
+        likeCount = document.getElementById(`like-count-${form.dataset.postId}`);
+        dislikeCount = document.getElementById(`dislike-count-${form.dataset.postId}`);
+      }
+      else if(form.dataset.commentId)
+      {
+        likeCount = document.getElementById(`like-count-${form.dataset.commentId}`);
+        dislikeCount = document.getElementById(`dislike-count-${form.dataset.commentId}`);
+      }
+
+      // Update like count and button
+      if (likeCount && typeof data.likeCount !== 'undefined')
+      {
+        likeCount.textContent = `${data.likeCount}`;
+        likeCount.dataset.likes = JSON.stringify(data.likes);
+      }
+
+      if (data.liked) {
+        button.dataset.liked = "true";
+        button.classList.add('liked');
+      } else {
+        button.dataset.liked = "false";
+        button.classList.remove('liked');
+      }
+
+      // Update dislike count and button (if user switched from dislike)
+      if (dislikeCount && typeof data.dislikeCount !== 'undefined')
+      {
+        dislikeCount.textContent = `${data.dislikeCount}`;
+        dislikeCount.dataset.dislikes = JSON.stringify(data.dislikes);
+      }
+
+      // Find dislike button - check post-actions-rail first, then comment wrapper
+      const container = form.closest('.post-actions-rail') || form.closest('.comment-wrapper');
+      const dislikeButton = container ? container.querySelector('.dislike-btn') : null;
+      if (dislikeButton)
+      {
+        dislikeButton.dataset.disliked = "false";
+        dislikeButton.classList.remove('disliked');
+      }
     }
-
-    const data = await response.json();
-
-    // Get count elements
-    let likeCount, dislikeCount;
-    if(form.dataset.postId)
+    catch (err)
     {
-      likeCount = document.getElementById(`like-count-${form.dataset.postId}`);
-      dislikeCount = document.getElementById(`dislike-count-${form.dataset.postId}`);
+      console.error("Error handling like:", err);
     }
-    else if(form.dataset.commentId)
-    {
-      likeCount = document.getElementById(`like-count-${form.dataset.commentId}`);
-      dislikeCount = document.getElementById(`dislike-count-${form.dataset.commentId}`);
-    }
-
-    // Update like count and button
-    if (likeCount && typeof data.likeCount !== 'undefined')
-    {
-      likeCount.textContent = `${data.likeCount}`;
-      likeCount.dataset.likes = JSON.stringify(data.likes);
-    }
-
-    if (data.liked) {
-      button.dataset.liked = "true";
-      button.classList.add('liked');
-    } else {
-      button.dataset.liked = "false";
-      button.classList.remove('liked');
-    }
-
-    // Update dislike count and button (if user switched from dislike)
-    if (dislikeCount && typeof data.dislikeCount !== 'undefined')
-    {
-      dislikeCount.textContent = `${data.dislikeCount}`;
-      dislikeCount.dataset.dislikes = JSON.stringify(data.dislikes);
-    }
-
-    // Find dislike button - check post-actions-rail first, then comment wrapper
-    const container = form.closest('.post-actions-rail') || form.closest('.comment-wrapper');
-    const dislikeButton = container ? container.querySelector('.dislike-btn') : null;
-    if (dislikeButton)
-    {
-      dislikeButton.dataset.disliked = "false";
-      dislikeButton.classList.remove('disliked');
-    }
-  }
-  catch (err)
-  {
-    console.error("Error handling like:", err);
-  }
   }
 
   async function handleDislikeForm(form, button)
@@ -166,7 +182,12 @@ function hideDislikePopup() {
         }
       });
 
+      // Check for verification requirement BEFORE throwing error
       if (!response.ok) {
+        const data = await response.json();
+        if (checkVerificationRequired(response, data)) {
+          return; // Stop execution if verification required
+        }
         throw new Error(`Server error: ${response.status}`);
       }
 
@@ -236,6 +257,17 @@ function hideDislikePopup() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),
       });
+
+      // Check for verification requirement BEFORE other error handling
+      if (!res.ok) {
+        const data = await res.json();
+        if (checkVerificationRequired(res, data)) {
+          return; // Stop execution if verification required
+        }
+        alert('Failed to add comment.');
+        textarea.style.height = "auto"; // reset
+        return;
+      }
 
       const data = await res.json();
 
@@ -357,278 +389,278 @@ function hideDislikePopup() {
     }
   }
 
-    async function init() {
-      // Auto-resize for comment input textareas
-      document.querySelectorAll(".comment-form textarea").forEach(textarea => {
-        textarea.addEventListener("input", () => {
-          textarea.style.height = "auto"; // reset
-          textarea.style.height = textarea.scrollHeight + "px"; // adjust
-        });
+  async function init() {
+    // Auto-resize for comment input textareas
+    document.querySelectorAll(".comment-form textarea").forEach(textarea => {
+      textarea.addEventListener("input", () => {
+        textarea.style.height = "auto"; // reset
+        textarea.style.height = textarea.scrollHeight + "px"; // adjust
       });
+    });
 
-      // Auto-resize for edit textareas (posts and comments)
-      document.body.addEventListener('input', (e) => {
-        if (e.target.matches('.edit-post-textarea') || e.target.matches('.edit-comment-textarea')) {
-          e.target.style.height = 'auto';
-          e.target.style.height = e.target.scrollHeight + 'px';
+    // Auto-resize for edit textareas (posts and comments)
+    document.body.addEventListener('input', (e) => {
+      if (e.target.matches('.edit-post-textarea') || e.target.matches('.edit-comment-textarea')) {
+        e.target.style.height = 'auto';
+        e.target.style.height = e.target.scrollHeight + 'px';
+      }
+    });
+
+    // Handle image preview for post editing
+    document.body.addEventListener('change', (e) => {
+      if (e.target.matches('.edit-post-image')) {
+        const input = e.target;
+        const form = input.closest('.edit-post-form');
+        const previewContainer = form.querySelector('.new-image-preview-container');
+        const previewImg = form.querySelector('.new-image-preview');
+
+        if (input.files && input.files[0]) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            previewImg.src = event.target.result;
+            previewContainer.style.display = 'block';
+            // If showing new image, keep current image visible too (unless it was removed)
+            // User can see both old and new
+          };
+          reader.readAsDataURL(input.files[0]);
+        } else {
+          previewContainer.style.display = 'none';
+          previewImg.src = '';
         }
-      });
+      }
+    });
 
-      // Handle image preview for post editing
-      document.body.addEventListener('change', (e) => {
-        if (e.target.matches('.edit-post-image')) {
-          const input = e.target;
-          const form = input.closest('.edit-post-form');
-          const previewContainer = form.querySelector('.new-image-preview-container');
-          const previewImg = form.querySelector('.new-image-preview');
+    // Make sure feed exists
+    const feed = document.getElementById('feed-container');
+    if (!feed) return;
 
-          if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(event) {
-              previewImg.src = event.target.result;
-              previewContainer.style.display = 'block';
-              // If showing new image, keep current image visible too (unless it was removed)
-              // User can see both old and new
-            };
-            reader.readAsDataURL(input.files[0]);
-          } else {
-            previewContainer.style.display = 'none';
-            previewImg.src = '';
+    // ---- 1. Like buttons (posts + comments) ----
+    document.body.addEventListener('click', async (e) => {
+      if(e.target.closest('button.like-btn'))
+      {
+        const btn = e.target.closest('button.like-btn');
+        if (!btn) return;
+
+        const form = btn.closest('form[action$="/like"]');
+        if (!form) return;
+        e.preventDefault();
+        await handleLikeForm(form, btn);
+      }
+
+      // ---- 2. Dislike buttons (posts + comments) ----
+      if(e.target.closest('button.dislike-btn'))
+      {
+        const btn = e.target.closest('button.dislike-btn');
+        if (!btn) return;
+
+        const form = btn.closest('form[action$="/dislike"]');
+        if (!form) return;
+        e.preventDefault();
+        await handleDislikeForm(form, btn);
+      }
+
+      if (e.target.closest('button.delete-comment-btn'))
+      {
+        e.preventDefault();
+        const btn = e.target.closest('button.delete-comment-btn');
+        await handleDeleteComment(btn);
+      }
+
+      if (e.target.closest('button.delete-post-btn'))
+      {
+        e.preventDefault();
+        const btn = e.target.closest('button.delete-post-btn');
+        await handleDeletePost(btn);
+        document.location.reload();
+      }
+
+      // --- Edit Post ---
+      if (e.target.closest('button.edit-post-btn'))
+      {
+        const btn = e.target.closest('.edit-post-btn');
+        const postCard = btn.closest('.post-card');
+        const form = postCard.querySelector('.edit-post-form');
+        const textarea = form.querySelector('.edit-post-textarea');
+
+        // Get content from the displayed post (which has the clean content)
+        const postContentElement = postCard.querySelector('.post-content');
+        const raw = postContentElement ? postContentElement.textContent : '';
+
+        const normalized = raw
+          .split('\n')
+          .map(line => line.trimStart())
+          .join('\n');
+
+        textarea.value = normalized;
+
+        // Show form FIRST so textarea has layout for scrollHeight calculation
+        postCard.querySelector('.post-actions-rail').querySelector('.edit-post-btn').style.display = 'none';
+        postCard.querySelector('.post-content-view').style.display = 'none';
+        form.style.display = '';
+
+        // NOW auto-resize textarea to fit content (after it's visible)
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+
+        textarea.focus();
+      }
+  
+
+      // --- Cancel Edit Post ---
+      if (e.target.closest('.cancel-edit-post-btn')) {
+        const postCard = e.target.closest('.post-card');
+        const form = postCard.querySelector('.edit-post-form');
+
+        // Reset image editing state
+        form.dataset.removeImage = 'false';
+        const imageInput = form.querySelector('.edit-post-image');
+        if (imageInput) imageInput.value = '';
+        const newImagePreviewContainer = form.querySelector('.new-image-preview-container');
+        if (newImagePreviewContainer) newImagePreviewContainer.style.display = 'none';
+        const currentImageContainer = form.querySelector('.current-image-container');
+        if (currentImageContainer) currentImageContainer.style.display = '';
+
+        postCard.querySelector('.edit-post-form').style.display = 'none';
+        postCard.querySelector('.post-actions-rail').querySelector('.edit-post-btn').style.display = '';
+        postCard.querySelector('.post-content-view').style.display = '';
+      }
+
+      // --- Remove Current Image from Post ---
+      if (e.target.closest('.remove-current-image-btn')) {
+        const form = e.target.closest('.edit-post-form');
+        form.dataset.removeImage = 'true';
+        const currentImageContainer = form.querySelector('.current-image-container');
+        if (currentImageContainer) currentImageContainer.style.display = 'none';
+      }
+
+      // --- Remove New Image Preview from Post ---
+      if (e.target.closest('.remove-new-image-btn')) {
+        const form = e.target.closest('.edit-post-form');
+        const imageInput = form.querySelector('.edit-post-image');
+        if (imageInput) imageInput.value = '';
+        const newImagePreviewContainer = form.querySelector('.new-image-preview-container');
+        if (newImagePreviewContainer) newImagePreviewContainer.style.display = 'none';
+      }
+
+      // --- Edit Comment ---
+      if (e.target.closest('button.edit-comment-btn')) {
+        const btn = e.target.closest('.edit-comment-btn');
+        const commentCard = btn.closest('.comment-wrapper');
+        const textarea = commentCard.querySelector('.edit-comment-textarea');
+
+        const commentContentElement = commentCard.querySelector('.comment-content');
+        const raw = commentContentElement ? commentContentElement.textContent : '';
+
+        const normalized = raw
+          .split('\n')
+          .map(line => line.trimStart())
+          .join('\n');
+
+        textarea.value = normalized;
+
+        // Show form FIRST so textarea has layout
+        commentCard.querySelector('.comment-actions').style.setProperty('display', 'none', 'important');
+        commentCard.querySelector('.comment-bubble').style.display = 'none';
+        commentCard.querySelector('.edit-comment-form').style.display = '';
+
+        // Auto-resize AFTER visible
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+
+        textarea.focus();
+      }
+
+
+      // --- Cancel Edit Comment ---
+      if (e.target.closest('.cancel-edit-comment-btn')) {
+        const commentCard = e.target.closest('.comment-wrapper');
+        commentCard.querySelector('.comment-actions').style.setProperty('display', 'inline-flex', 'important');
+        commentCard.querySelector('.edit-comment-form').style.display = 'none';
+        commentCard.querySelector('.comment-bubble').style.display = '';
+      }
+
+      if(e.target.closest('.like-count'))
+      {
+        const likeCount = e.target.closest('.like-count');
+        if (likeCount) {
+          // Get the names from the data-likes attribute
+          let names = [];
+          try {
+            names = JSON.parse(likeCount.dataset.likes || "[]");
+          } catch (err) {
+            names = [];
           }
+          showLikePopup(names);
         }
-      });
+      }
 
-      // Make sure feed exists
-      const feed = document.getElementById('feed-container');
-      if (!feed) return;
+      // Hide popup when close button is clicked
+      if (e.target.classList.contains('like-popup-close')) {
+        hideLikePopup();
+      }
 
-      // ---- 1. Like buttons (posts + comments) ----
-      document.body.addEventListener('click', async (e) => {
-        if(e.target.closest('button.like-btn'))
-        {
-          const btn = e.target.closest('button.like-btn');
-          if (!btn) return;
+      // Hide popup when clicking outside the popup content
+      if (e.target.id === 'like-popup') {
+        hideLikePopup();
+      }
 
-          const form = btn.closest('form[action$="/like"]');
-          if (!form) return;
-          e.preventDefault();
-          await handleLikeForm(form, btn);
-        }
-
-        // ---- 2. Dislike buttons (posts + comments) ----
-        if(e.target.closest('button.dislike-btn'))
-        {
-          const btn = e.target.closest('button.dislike-btn');
-          if (!btn) return;
-
-          const form = btn.closest('form[action$="/dislike"]');
-          if (!form) return;
-          e.preventDefault();
-          await handleDislikeForm(form, btn);
-        }
-
-        if (e.target.closest('button.delete-comment-btn'))
-        {
-          e.preventDefault();
-          const btn = e.target.closest('button.delete-comment-btn');
-          await handleDeleteComment(btn);
-        }
-
-        if (e.target.closest('button.delete-post-btn'))
-        {
-          e.preventDefault();
-          const btn = e.target.closest('button.delete-post-btn');
-          await handleDeletePost(btn);
-          document.location.reload();
-        }
-
-        // --- Edit Post ---
-        if (e.target.closest('button.edit-post-btn'))
-        {
-          const btn = e.target.closest('.edit-post-btn');
-          const postCard = btn.closest('.post-card');
-          const form = postCard.querySelector('.edit-post-form');
-          const textarea = form.querySelector('.edit-post-textarea');
-
-          // Get content from the displayed post (which has the clean content)
-          const postContentElement = postCard.querySelector('.post-content');
-          const raw = postContentElement ? postContentElement.textContent : '';
-
-          const normalized = raw
-            .split('\n')
-            .map(line => line.trimStart())
-            .join('\n');
-
-          textarea.value = normalized;
-
-          // Show form FIRST so textarea has layout for scrollHeight calculation
-          postCard.querySelector('.post-actions-rail').querySelector('.edit-post-btn').style.display = 'none';
-          postCard.querySelector('.post-content-view').style.display = 'none';
-          form.style.display = '';
-
-          // NOW auto-resize textarea to fit content (after it's visible)
-          textarea.style.height = 'auto';
-          textarea.style.height = textarea.scrollHeight + 'px';
-
-          textarea.focus();
-        }
-    
-
-        // --- Cancel Edit Post ---
-        if (e.target.closest('.cancel-edit-post-btn')) {
-          const postCard = e.target.closest('.post-card');
-          const form = postCard.querySelector('.edit-post-form');
-
-          // Reset image editing state
-          form.dataset.removeImage = 'false';
-          const imageInput = form.querySelector('.edit-post-image');
-          if (imageInput) imageInput.value = '';
-          const newImagePreviewContainer = form.querySelector('.new-image-preview-container');
-          if (newImagePreviewContainer) newImagePreviewContainer.style.display = 'none';
-          const currentImageContainer = form.querySelector('.current-image-container');
-          if (currentImageContainer) currentImageContainer.style.display = '';
-
-          postCard.querySelector('.edit-post-form').style.display = 'none';
-          postCard.querySelector('.post-actions-rail').querySelector('.edit-post-btn').style.display = '';
-          postCard.querySelector('.post-content-view').style.display = '';
-        }
-
-        // --- Remove Current Image from Post ---
-        if (e.target.closest('.remove-current-image-btn')) {
-          const form = e.target.closest('.edit-post-form');
-          form.dataset.removeImage = 'true';
-          const currentImageContainer = form.querySelector('.current-image-container');
-          if (currentImageContainer) currentImageContainer.style.display = 'none';
-        }
-
-        // --- Remove New Image Preview from Post ---
-        if (e.target.closest('.remove-new-image-btn')) {
-          const form = e.target.closest('.edit-post-form');
-          const imageInput = form.querySelector('.edit-post-image');
-          if (imageInput) imageInput.value = '';
-          const newImagePreviewContainer = form.querySelector('.new-image-preview-container');
-          if (newImagePreviewContainer) newImagePreviewContainer.style.display = 'none';
-        }
-
-        // --- Edit Comment ---
-        if (e.target.closest('button.edit-comment-btn')) {
-          const btn = e.target.closest('.edit-comment-btn');
-          const commentCard = btn.closest('.comment-wrapper');
-          const textarea = commentCard.querySelector('.edit-comment-textarea');
-
-          const commentContentElement = commentCard.querySelector('.comment-content');
-          const raw = commentContentElement ? commentContentElement.textContent : '';
-
-          const normalized = raw
-            .split('\n')
-            .map(line => line.trimStart())
-            .join('\n');
-
-          textarea.value = normalized;
-
-          // Show form FIRST so textarea has layout
-          commentCard.querySelector('.comment-actions').style.setProperty('display', 'none', 'important');
-          commentCard.querySelector('.comment-bubble').style.display = 'none';
-          commentCard.querySelector('.edit-comment-form').style.display = '';
-
-          // Auto-resize AFTER visible
-          textarea.style.height = 'auto';
-          textarea.style.height = textarea.scrollHeight + 'px';
-
-          textarea.focus();
-        }
-
-
-        // --- Cancel Edit Comment ---
-        if (e.target.closest('.cancel-edit-comment-btn')) {
-          const commentCard = e.target.closest('.comment-wrapper');
-          commentCard.querySelector('.comment-actions').style.setProperty('display', 'inline-flex', 'important');
-          commentCard.querySelector('.edit-comment-form').style.display = 'none';
-          commentCard.querySelector('.comment-bubble').style.display = '';
-        }
-
-        if(e.target.closest('.like-count'))
-        {
-          const likeCount = e.target.closest('.like-count');
-          if (likeCount) {
-            // Get the names from the data-likes attribute
-            let names = [];
-            try {
-              names = JSON.parse(likeCount.dataset.likes || "[]");
-            } catch (err) {
-              names = [];
-            }
-            showLikePopup(names);
+      // Show dislike popup when clicking dislike count
+      if(e.target.closest('.dislike-count'))
+      {
+        const dislikeCount = e.target.closest('.dislike-count');
+        if (dislikeCount) {
+          let names = [];
+          try {
+            names = JSON.parse(dislikeCount.dataset.dislikes || "[]");
+          } catch (err) {
+            names = [];
           }
+          showDislikePopup(names);
         }
+      }
 
-        // Hide popup when close button is clicked
-        if (e.target.classList.contains('like-popup-close')) {
-          hideLikePopup();
-        }
+      // Hide dislike popup when close button is clicked
+      if (e.target.classList.contains('dislike-popup-close')) {
+        hideDislikePopup();
+      }
 
-        // Hide popup when clicking outside the popup content
-        if (e.target.id === 'like-popup') {
-          hideLikePopup();
-        }
+      // Hide dislike popup when clicking outside the popup content
+      if (e.target.id === 'dislike-popup') {
+        hideDislikePopup();
+      }
+    });
 
-        // Show dislike popup when clicking dislike count
-        if(e.target.closest('.dislike-count'))
-        {
-          const dislikeCount = e.target.closest('.dislike-count');
-          if (dislikeCount) {
-            let names = [];
-            try {
-              names = JSON.parse(dislikeCount.dataset.dislikes || "[]");
-            } catch (err) {
-              names = [];
-            }
-            showDislikePopup(names);
-          }
-        }
+    document.body.addEventListener('submit', async (e) => {
+      if (e.target.classList.contains('edit-post-form'))
+      {
+        e.preventDefault();
+        const form = e.target;
+        await handleEditPost(form);
+      }
 
-        // Hide dislike popup when close button is clicked
-        if (e.target.classList.contains('dislike-popup-close')) {
-          hideDislikePopup();
-        }
+      // --- Save Edited Comment ---
+      if (e.target.classList.contains('edit-comment-form'))
+      {
+        e.preventDefault();
+        const form = e.target;
+        await handleEditComment(form);
+      }
 
-        // Hide dislike popup when clicking outside the popup content
-        if (e.target.id === 'dislike-popup') {
-          hideDislikePopup();
-        }
-      });
+      if(e.target.closest('form.comment-form'))
+      {
+        const form = e.target.closest('form.comment-form');
+        if (!form) return;
 
-      document.body.addEventListener('submit', async (e) => {
-        if (e.target.classList.contains('edit-post-form'))
-        {
-          e.preventDefault();
-          const form = e.target;
-          await handleEditPost(form);
-        }
+        e.preventDefault();
+        handleAddComment(form);
+      }
+    });
+  }
 
-        // --- Save Edited Comment ---
-        if (e.target.classList.contains('edit-comment-form'))
-        {
-          e.preventDefault();
-          const form = e.target;
-          await handleEditComment(form);
-        }
-
-        if(e.target.closest('form.comment-form'))
-        {
-          const form = e.target.closest('form.comment-form');
-          if (!form) return;
-
-          e.preventDefault();
-          handleAddComment(form);
-        }
-      });
-    }
-
-    // Run init after DOM ready
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', init);
-    } else {
-      init();
-    }
-  })();
+  // Run init after DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

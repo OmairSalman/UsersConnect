@@ -21,4 +21,16 @@ AuthRouter.post('/verify-reset-code', authController.verifyResetCode);
 
 AuthRouter.post('/reset-password', authController.resetPasswordWithSession);
 
+AuthRouter.post('/email-verification/request', isAuthenticated, authController.requestEmailVerification);
+
+AuthRouter.post('/email-verification/verify', isAuthenticated, authController.verifyEmailCode);
+
+AuthRouter.post('/email-change/request', isAuthenticated, authController.requestEmailChange);
+
+AuthRouter.post('/email-change/verify-current', isAuthenticated, authController.verifyCurrentEmail);
+
+AuthRouter.post('/email-change/request-new', isAuthenticated, authController.requestNewEmailVerification);
+
+AuthRouter.post('/email-change/confirm', isAuthenticated, authController.confirmEmailChange);
+
 export default AuthRouter;

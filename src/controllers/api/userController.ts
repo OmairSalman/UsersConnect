@@ -5,6 +5,7 @@ import { asString } from "../../utils/asString";
 import jwt from 'jsonwebtoken';
 import multer from 'multer';
 import logger from "../../config/logger";
+import { RefreshPayload, UserPayload } from "../../config/express";
 
 const userService = new UserService();
 const postService = new PostService();
@@ -74,16 +75,17 @@ export default class UserController
                     path: "/",
                 });
 
-                const accessPayload = {
+                const accessPayload: UserPayload = {
                     _id: user._id,
                     name: user.name,
                     email: user.email,
                     isEmailPublic: user.isEmailPublic,
+                    isEmailVerified: user.isEmailVerified,
                     avatarURL: user.avatarURL,
                     isAdmin: user.isAdmin
                 };
 
-                const refreshPayload = {
+                const refreshPayload: RefreshPayload = {
                     _id: user._id
                 };
 
@@ -189,16 +191,17 @@ export default class UserController
                     path: "/",
                 });
 
-                const accessPayload = {
+                const accessPayload: UserPayload = {
                     _id: updatedUser._id,
                     name: updatedUser.name,
                     email: updatedUser.email,
                     isEmailPublic: updatedUser.isEmailPublic,
+                    isEmailVerified: updatedUser.isEmailVerified,
                     avatarURL: updatedUser.avatarURL,
                     isAdmin: updatedUser.isAdmin
                 };
 
-                const refreshPayload = {
+                const refreshPayload: RefreshPayload = {
                     _id: updatedUser._id
                 };
 
@@ -264,16 +267,17 @@ export default class UserController
                     path: "/",
                 });
 
-                const accessPayload = {
+                const accessPayload:UserPayload = {
                     _id: updatedUser._id,
                     name: updatedUser.name,
                     email: updatedUser.email,
                     isEmailPublic: updatedUser.isEmailPublic,
+                    isEmailVerified: updatedUser.isEmailVerified,
                     avatarURL: updatedUser.avatarURL,
                     isAdmin: updatedUser.isAdmin
                 };
 
-                const refreshPayload = {
+                const refreshPayload: RefreshPayload = {
                     _id: updatedUser._id
                 };
 

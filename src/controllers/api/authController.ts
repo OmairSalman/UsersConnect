@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import AuthService from "../../services/authService";
 import jwt from 'jsonwebtoken';
+import { User } from "../../entities/userEntity";
+import { isEmailVerified } from "../../middlewares/auth/isEmailVerified";
+import { RefreshPayload, UserPayload } from "../../config/express";
 
 const authService = new AuthService();
 
@@ -22,16 +25,17 @@ export default class AuthController
                 response.status(401).json({ error: "Invalid email or password" });
         else
         {
-            const accessPayload = {
+            const accessPayload: UserPayload = {
                 _id: user._id,
                 name: user.name,
                 email: user.email,
                 isEmailPublic: user.isEmailPublic,
+                isEmailVerified: user.isEmailVerified,
                 avatarURL: user.avatarURL,
                 isAdmin: user.isAdmin
             };
 
-            const refreshPayload = {
+            const refreshPayload: RefreshPayload = {
                 _id: user._id
             };
             
@@ -58,19 +62,28 @@ export default class AuthController
 
     async registerUser(request: Request, response: Response)
     {
-        let newUser = request.body;
-        newUser = await authService.registerUser(newUser);
+        const result = await authService.registerUser(request.body);
         
-        const accessPayload = {
+        if (!result.success || !result.user) {
+            return response.status(400).json({
+                success: false,
+                message: result.message || 'Registration failed'
+            });
+        }
+
+        const newUser = result.user;
+        
+        const accessPayload: UserPayload = {
             _id: newUser._id,
             name: newUser.name,
             email: newUser.email,
             isEmailPublic: newUser.isEmailPublic,
+            isEmailVerified: newUser.isEmailVerified,
             avatarURL: newUser.avatarURL,
             isAdmin: false
         };
 
-        const refreshPayload = {
+        const refreshPayload: RefreshPayload = {
             _id: newUser._id
         };
 
@@ -91,7 +104,10 @@ export default class AuthController
             maxAge: 1000 * 60 * 60 * 24 * 30
         });
 
-        response.redirect('/feed?page=1');
+        return response.status(200).json({
+            success: true,
+            message: 'Registration successful'
+        });
     }
 
     async logoutUser(request: Request, response: Response)
@@ -251,6 +267,266 @@ export default class AuthController
                 success: false,
                 message: 'An error occurred. Please try again.'
             });
+        }
+    }
+
+    async requestEmailVerification(request: Request, response: Response)
+    {
+        const userId = request.user?._id;
+        
+        if (!userId) {
+            return response.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        const result = await authService.requestEmailVerification(userId);
+        
+        if (result.success) {
+            return response.status(200).json(result);
+        } else {
+            return response.status(400).json(result);
+        }
+    }
+
+    async verifyEmailCode(request: Request, response: Response)
+    {
+        const userId = request.user?._id;
+        const { code } = request.body;
+        
+        if (!userId) {
+            return response.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        if (!code) {
+            return response.status(400).json({ success: false, message: 'Verification code is required' });
+        }
+        
+        const result = await authService.verifyEmailCode(userId, code);
+        
+        if (result.success) {
+            // Update JWT tokens with verified status
+            const user = await User.findOneBy({ _id: userId });
+            if (user) {
+                response.clearCookie('accessToken', {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/'
+                });
+                
+                response.clearCookie('refreshToken', {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/'
+                });
+                
+                const accessPayload: UserPayload = {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    isEmailPublic: user.isEmailPublic,
+                    avatarURL: user.avatarURL,
+                    isAdmin: user.isAdmin,
+                    isEmailVerified: user.isEmailVerified
+                };
+                
+                const refreshPayload: RefreshPayload = {
+                    _id: user._id
+                };
+                
+                const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
+                const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+                
+                response.cookie('accessToken', accessToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 1000 * 60 * 15
+                });
+                
+                response.cookie('refreshToken', refreshToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 1000 * 60 * 60 * 24 * 30
+                });
+            }
+            
+            return response.status(200).json(result);
+        } else {
+            return response.status(400).json(result);
+        }
+    }
+
+    async requestEmailChange(request: Request, response: Response)
+    {
+        const userId = request.user?._id;
+        const currentEmail = request.user?.email;
+        
+        if (!userId || !currentEmail)
+        {
+            return response.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        const result = await authService.requestEmailChange(userId, currentEmail);
+        
+        if (result.success)
+        {
+            return response.status(200).json(result);
+        }
+        else
+        {
+            return response.status(500).json(result);
+        }
+    }
+
+    async verifyCurrentEmail(request: Request, response: Response)
+    {
+        const { code } = request.body;
+        const userId = request.user?._id;
+        const currentEmail = request.user?.email;
+        
+        if (!userId || !currentEmail)
+        {
+            return response.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        const result = await authService.verifyCurrentEmail(currentEmail, code, userId);
+        
+        if (result.success && result.tempToken)
+        {
+            // Set HttpOnly cookie with temp token
+            response.cookie('emailChangeSession', result.tempToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 1000 * 60 * 5 // 5 minutes
+            });
+            
+            return response.status(200).json({ success: true, message: result.message });
+        }
+        else
+        {
+            return response.status(400).json(result);
+        }
+    }
+
+    async requestNewEmailVerification(request: Request, response: Response)
+    {
+        const { newEmail } = request.body;
+        const userId = request.user?._id;
+        const tempToken = request.cookies.emailChangeSession;
+        
+        if (!userId)
+        {
+            return response.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        if (!tempToken)
+        {
+            return response.status(400).json({ success: false, message: 'Session expired. Please start over.' });
+        }
+        
+        if (!newEmail)
+        {
+            return response.status(400).json({ success: false, message: 'New email is required' });
+        }
+        
+        const result = await authService.requestNewEmailVerification(userId, newEmail, tempToken);
+        
+        if (result.success)
+        {
+            return response.status(200).json(result);
+        }
+        else
+        {
+            return response.status(400).json(result);
+        }
+    }
+
+    async confirmEmailChange(request: Request, response: Response)
+    {
+        const { code } = request.body;
+        const userId = request.user?._id;
+        const tempToken = request.cookies.emailChangeSession;
+        
+        if (!userId)
+        {
+            return response.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+        
+        if (!tempToken)
+        {
+            return response.status(400).json({ success: false, message: 'Session expired. Please start over.' });
+        }
+        
+        const result = await authService.confirmEmailChange(userId, code, tempToken);
+        
+        if (result.success && result.newEmail)
+        {
+            // Clear the temp session cookie
+            response.clearCookie('emailChangeSession', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/'
+            });
+            
+            // Update JWT tokens with new email
+            const user = await User.findOneBy({ _id: userId });
+            if (user)
+            {
+                response.clearCookie('accessToken', {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/'
+                });
+                
+                response.clearCookie('refreshToken', {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    path: '/'
+                });
+                
+                const accessPayload: UserPayload = {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    isEmailPublic: user.isEmailPublic,
+                    isEmailVerified: user.isEmailVerified,
+                    avatarURL: user.avatarURL,
+                    isAdmin: user.isAdmin
+                };
+                
+                const refreshPayload: RefreshPayload = {
+                    _id: user._id
+                };
+                
+                const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
+                const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+                
+                response.cookie('accessToken', accessToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 1000 * 60 * 15
+                });
+                
+                response.cookie('refreshToken', refreshToken, {
+                    httpOnly: true,
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: 'lax',
+                    maxAge: 1000 * 60 * 60 * 24 * 30
+                });
+            }
+            
+            return response.status(200).json(result);
+        }
+        else
+        {
+            return response.status(400).json(result);
         }
     }
 }

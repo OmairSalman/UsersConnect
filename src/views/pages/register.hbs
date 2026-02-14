@@ -9,7 +9,7 @@
     </div>
 
     <!-- Register Form -->
-    <form action="/auth/register" method="POST">
+    <form id="register-form" action="/auth/register" method="POST">
       <!-- Full Name -->
       <div class="mb-3">
         <label for="name" class="form-label">Full Name</label>
@@ -34,9 +34,12 @@
         <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required placeholder="Re-enter your password">
       </div>
 
+      <!-- Error Message -->
+      <div id="register-error" class="alert alert-danger" style="display: none;" role="alert"></div>
+
       <!-- Submit -->
       <div class="d-grid mb-3">
-        <button type="submit" class="btn btn-lg btn-primary">Register</button>
+        <button type="submit" class="btn btn-lg btn-primary" id="register-btn">Register</button>
       </div>
 
       <!-- Optional: login link -->
@@ -46,3 +49,5 @@
     </form>
   </div>
 </div>
+
+<script src="/js/register.js"></script>

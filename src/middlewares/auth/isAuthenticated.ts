@@ -42,6 +42,7 @@ export async function isAuthenticated(request: Request, response: Response, next
       name: user.name,
       email: user.email,
       isEmailPublic: user.isEmailPublic,
+      isEmailVerified: user.isEmailVerified,
       avatarURL: user.avatarURL,
       isAdmin: user.isAdmin
     };

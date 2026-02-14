@@ -1,3 +1,14 @@
+// Check if response requires email verification
+function checkVerificationRequired(response, data) {
+  if (response.status === 403 && data && data.requiresVerification) {
+    if (typeof window.showPleaseVerifyModal === 'function') {
+      window.showPleaseVerifyModal();
+    }
+    return true;
+  }
+  return false;
+}
+
 (() => {
   async function handleCreatePost(form) {
     const title = form.querySelector('input[name="title"]').value.trim();
@@ -28,6 +39,20 @@
         method: form.method.toUpperCase(),
         body: formData
       });
+
+      // Check for verification requirement BEFORE other error handling
+      if (!res.ok) {
+        const data = await res.json();
+        if (checkVerificationRequired(res, data)) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+          return; // Stop execution if verification required
+        }
+        alert(data.error || "Failed to create post.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        return;
+      }
 
       const data = await res.json();
 

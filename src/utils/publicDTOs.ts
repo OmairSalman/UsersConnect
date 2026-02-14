@@ -9,6 +9,7 @@ export function userToPublic(user: User): PublicUser {
     name: user.name,
     email: user.email,
     isEmailPublic: user.isEmailPublic,
+    isEmailVerified: user.isEmailVerified,
     avatarURL: user.avatarURL,
     isAdmin: user.isAdmin
   };

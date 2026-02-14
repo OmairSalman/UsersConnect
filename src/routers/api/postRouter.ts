@@ -2,6 +2,7 @@ import { Router } from 'express';
 import PostController from '../../controllers/api/postController';
 import PostValidator from '../../middlewares/validation/postValidation';
 import { isAuthenticated } from '../../middlewares/auth/isAuthenticated';
+import { isEmailVerified } from '../../middlewares/auth/isEmailVerified';
 import { isPostAuthor } from '../../middlewares/auth/isPostAuthor';
 import multer from 'multer';
 
@@ -27,18 +28,18 @@ PostRouter.get('/', postController.getAllPosts);
 
 PostRouter.get('/:postId', postController.getPost);
 
-PostRouter.post('/', upload.single('image'), PostValidator, postController.savePost);
+PostRouter.post('/', isEmailVerified, upload.single('image'), postController.savePost);
 
 PostRouter.put('/:postId', isPostAuthor, upload.single('image'), PostValidator, postController.updatePost);
 
 PostRouter.delete('/:postId', isPostAuthor, postController.deletePost);
 
-PostRouter.post('/:postId/like', postController.like)
+PostRouter.post('/:postId/like', isEmailVerified, postController.like);
 
-PostRouter.delete('/:postId/like', postController.unlike);
+PostRouter.delete('/:postId/like', isEmailVerified, postController.unlike);
 
-PostRouter.post('/:postId/dislike', postController.dislike);
+PostRouter.post('/:postId/dislike', isEmailVerified, postController.dislike);
 
-PostRouter.delete('/:postId/dislike', postController.undislike);
+PostRouter.delete('/:postId/dislike', isEmailVerified, postController.undislike);
 
 export default PostRouter;
