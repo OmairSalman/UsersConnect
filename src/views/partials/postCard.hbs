@@ -14,13 +14,15 @@
         <h5 class="post-title mb-1">{{post.title}}</h5>
         
         {{#if post.imageURL}}
-          <img src="{{post.imageURL}}"
-               alt="Post image"
-               class="img-fluid rounded mb-3 post-image"
-               style="max-width: 100%; height: auto; max-height: 500px; object-fit: cover;">
+          <div class="mb-3" style="display: flex; justify-content: center; width: 100%;">
+            <img src="{{post.imageURL}}"
+                alt="Post image"
+                class="rounded post-image"
+                style="height: auto; max-height: 500px; max-width: 100%; object-fit: cover;">
+          </div>
         {{/if}}
 
-<p class="post-content mb-3">{{~post.content~}}</p>
+        <p class="post-content mb-3">{{~post.content~}}</p>
       </div>
 
       <form class="edit-post-form" style="display:none;" data-post-id="{{post._id}}" data-current-image="{{post.imageURL}}">

@@ -1304,9 +1304,10 @@ footer a:hover {
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: transform 0.2s ease;
-    cursor: pointer;
+    cursor: default;
+    display: block;
   }
-  
+
   .post-image:hover {
     transform: scale(1.02);
   }
@@ -1340,4 +1341,8 @@ footer a:hover {
   input[type="file"].form-input:focus {
     border-color: #007bff;
     border-style: solid;
+  }
+
+  .post-card .card-body {
+    padding: 0 !important;
   }
