@@ -38,7 +38,7 @@ export default class UserService
         return safeUser;
     }
 
-    async updateUser(userId: string, updatedUser: {name: string, email: string, isEmailPublic?: boolean, isEmailVerified?: boolean, currentPassword?: string, newPassword?: string, confirmPassword?: string, avatarURL: string}): Promise<PublicUser | string>
+    async updateUser(userId: string, updatedUser: {name: string, email: string, isEmailPublic?: boolean, isEmailVerified?: boolean, currentPassword?: string, newPassword?: string, confirmPassword?: string, avatarURL?: string}): Promise<PublicUser | string>
     {
         const user = await User.findOneBy({ _id: userId });
         if (!user) {
@@ -59,9 +59,36 @@ export default class UserService
 
         const updateData: any = {
             name: updatedUser.name,
-            email: updatedUser.email
         };
 
+        // ============================================
+        // EMAIL UPDATE LOGIC
+        // ============================================
+        if (updatedUser.email && updatedUser.email !== user.email) {
+            // Check if email already exists
+            const existing = await User.findOneBy({ email: updatedUser.email });
+            if (existing && existing._id !== userId) {
+                return "Email is already in use.";
+            }
+
+            updateData.email = updatedUser.email;
+
+            // Only update avatar if currently using Gravatar
+            if (user.avatarURL.includes('gravatar.com')) {
+                const hash = crypto.createHash('sha256').update(updatedUser.email.trim().toLowerCase()).digest('hex');
+                updateData.avatarURL = `https://gravatar.com/avatar/${hash}?s=256&d=initials`;
+            }
+            // If user has custom S3 avatar, keep it unchanged
+
+            // Reset email verification when admin changes email
+            if (updatedUser.isEmailVerified === false) {
+                updateData.isEmailVerified = false;
+            }
+        }
+
+        // ============================================
+        // OTHER UPDATES
+        // ============================================
         if (typeof updatedUser.isEmailPublic === 'boolean') {
             updateData.isEmailPublic = updatedUser.isEmailPublic;
         }
@@ -71,30 +98,18 @@ export default class UserService
             updateData.password = await bcrypt.hash(updatedUser.newPassword, salt);
         }
 
-        if (updatedUser.email) {
-            const existing = await User.findOneBy({ email: updatedUser.email });
-            if (existing && existing._id !== userId)
-            {
-                return "Email is already in use.";
-            }
-            const hash = crypto.createHash('sha256').update(updatedUser.email.trim()).digest('hex');
-            if (updatedUser.avatarURL && updatedUser.avatarURL.includes('gravatar.com')) updateData.avatarURL = `https://gravatar.com/avatar/${hash}?s=256&d=initials`;
-        }
-
         await User.update({ _id: userId }, updateData);
         const updatedUserRecord = await User.findOneBy({ _id: userId });
-        if (!updatedUserRecord)
-        {
+        if (!updatedUserRecord) {
             return "User not found";
         }
         
+        // Invalidate cache
         const keys = await redisClient.keys(`usersconnect:user:${userId}:posts:*`);
         if (keys.length > 0) {
-                // Strip the prefix from each key before deleting
-                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
-
-                await redisClient.del(...keysWithoutPrefix);
-            }
+            const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+            await redisClient.del(...keysWithoutPrefix);
+        }
         await redisClient.del('feed:page:1');
 
         const safeUser = userToPublic(updatedUserRecord);

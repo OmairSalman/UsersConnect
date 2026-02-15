@@ -1,39 +1,100 @@
 <div class="edit-profile-card">
   <h1>Edit User (Admin)</h1>
-  <form id="admin-edit-user-form" method="POST" action="/admin/users/{{user._id}}/edit" autocomplete="off" data-userid="{{user._id}}">
-    <!-- Avatar and Gravatar link -->
-    <div class="form-group d-flex align-items-center mb-3">
-      <img 
-        src="{{user.avatarURL}}" 
-        alt="{{user.name}}'s avatar" 
-        class="edit-avatar-img me-2"
-        style="width: 64px; height: 64px; border-radius: 50%;">
-        <span class="fw-semibold">{{user.name}}</span>
+  
+  <!-- User Info Header -->
+  <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+    <img 
+      src="{{user.avatarURL}}" 
+      alt="{{user.name}}'s avatar" 
+      class="edit-avatar-img me-3"
+      style="width: 64px; height: 64px; border-radius: 50%;">
+    <div>
+      <h5 class="mb-0">{{user.name}}</h5>
+      <small class="text-muted">User ID: {{user._id}}</small>
     </div>
+  </div>
 
-    <!-- Email -->
-    <div class="form-group mb-3">
-      <label for="edit-email">Email</label>
-      <input type="email" id="edit-email" name="email" value="{{user.email}}" class="form-control" required>
-      <small id="email-msg" class="form-text text-muted">
-        Changing the email will update the user's avatar to the <a href="https://gravatar.com" target="_blank">Gravatar</a> for the new email, or a random image if not set.
-      </small>
-    </div>
+  <!-- ============================================ -->
+  <!-- SECTION 1: Edit Name -->
+  <!-- ============================================ -->
+  <div class="mb-4">
+    <h5>Display Name</h5>
+    <form id="admin-edit-name-form" data-userid="{{user._id}}">
+      <div class="form-group mb-2">
+        <label for="edit-name">Name</label>
+        <input 
+          type="text" 
+          id="edit-name" 
+          name="name" 
+          value="{{user.name}}" 
+          class="form-control" 
+          required 
+          minlength="1"
+          maxlength="50">
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Save Name</button>
+      <small id="name-msg" class="form-text ms-2"></small>
+    </form>
+  </div>
 
-    <!-- New Password -->
-    <div class="form-group mb-3">
-      <label for="new-password">New Password</label>
-      <input type="password" id="new-password" name="newPassword" class="form-control">
-    </div>
-    <div class="form-group mb-3">
-      <label for="confirm-password">Confirm New Password</label>
-      <input type="password" id="confirm-password" name="confirmPassword" class="form-control">
-      <small id="password-warning" class="form-text text-danger"></small>
-    </div>
+  <hr>
 
-    <button type="submit" class="btn btn-primary mt-2">Save Changes</button>
-    <a href="/admin/users" class="btn btn-link mt-2">Cancel</a>
-  </form>
+  <!-- ============================================ -->
+  <!-- SECTION 2: Edit Email -->
+  <!-- ============================================ -->
+  <div class="mb-4">
+    <h5>Email Address</h5>
+    <form id="admin-edit-email-form" data-userid="{{user._id}}">
+      <div class="form-group mb-2">
+        <label for="edit-email">Email</label>
+        <input 
+          type="email" 
+          id="edit-email" 
+          name="email" 
+          value="{{user.email}}" 
+          class="form-control" 
+          required>
+        <small class="form-text text-muted">
+          Changing the email will update the Gravatar avatar (if using Gravatar) and reset email verification.
+        </small>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Save Email</button>
+      <small id="email-msg" class="form-text ms-2"></small>
+    </form>
+  </div>
+
+  <hr>
+
+  <!-- ============================================ -->
+  <!-- SECTION 3: Change Password -->
+  <!-- ============================================ -->
+  <div class="mb-4">
+    <h5>Password</h5>
+    <form id="admin-edit-password-form" data-userid="{{user._id}}">
+      <div class="form-group mb-2">
+        <label for="new-password">New Password</label>
+        <input 
+          type="password" 
+          id="new-password" 
+          name="newPassword" 
+          class="form-control" 
+          minlength="6"
+          placeholder="Enter new password (min 6 characters)">
+        <small class="form-text text-muted">
+          Leave blank to keep current password.
+        </small>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Change Password</button>
+      <small id="password-msg" class="form-text ms-2"></small>
+    </form>
+  </div>
+
+  <hr>
+
+  <!-- Back to Users Link -->
+  <div class="mt-4">
+    <a href="/admin/users" class="btn btn-secondary">← Back to Users</a>
+  </div>
 </div>
 
 <script src="/js/admin-edit-user.js"></script>
