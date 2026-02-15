@@ -9,7 +9,6 @@ import UserRouter from './routers/api/userRouter';
 import AuthRouter from './routers/api/authRouter';
 import PostRouter from './routers/api/postRouter';
 import CommentRouter from './routers/api/commentRouter';
-import EmailTestRouter from './routers/api/emailTestRouter';
 
 import AppDataSource from './config/dataSource';
 
@@ -76,7 +75,6 @@ async function startServer() {
   app.use('/auth', AuthRouter);
   app.use('/posts', PostRouter);
   app.use('/comments', CommentRouter);
-  app.use('/test/email', EmailTestRouter);
   
   // Start listening
   app.listen(3000, () => { 
