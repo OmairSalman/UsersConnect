@@ -40,23 +40,26 @@ export default class UserController
             return response.status(403).send({message: "Forbidden: Admins only"});
         }
 
-        if (updatedUser.newPassword || updatedUser.confirmPassword) {
-            if (!updatedUser.newPassword || !updatedUser.confirmPassword) {
+        if (updatedUser.newPassword || updatedUser.confirmPassword)
+        {
+            if (!updatedUser.newPassword || !updatedUser.confirmPassword)
+            {
                 return response.status(400).send('Both password fields are required.');
             }
-            if (updatedUser.newPassword !== updatedUser.confirmPassword) {
+            if (updatedUser.newPassword !== updatedUser.confirmPassword)
+            {
                 return response.status(400).send('Passwords do not match.');
             }
         }
 
         const user = await userService.updateUser(userId, updatedUser);
         if(typeof user === 'string')
-            {
-                if(request.xhr)
-                    response.json({message: user});
+        {
+            if(request.xhr)
+                response.json({message: user});
 
-                else response.status(400).json({message: user});
-            }
+            else response.status(400).json({message: user});
+        }
         else
         {
             if(request.user?._id === user._id)
