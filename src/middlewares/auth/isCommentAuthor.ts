@@ -9,8 +9,8 @@ export async function isCommentAuthor(request: Request, response: Response, next
 
     const comment = await Comment.findOneBy({_id: commentId});
     if(!comment)
-        return response.status(404).send("Comment not found");
+        return response.status(404).json({message: "Comment not found"});
     if(comment.author._id !== user._id && !user.isAdmin)
-        return response.status(403).send("You're not allowed to perform this action on this comment");
+        return response.status(403).json({message: "You're not allowed to perform this action on this comment"});
     next();
 }
