@@ -10,23 +10,37 @@ export async function isAuthenticated(request: Request, response: Response, next
   const accessToken = request.cookies.accessToken;
   const refreshToken = request.cookies.refreshToken;
 
-  if (!accessToken && ! refreshToken)
+  if (!accessToken && !refreshToken)
   {
-    return response.redirect('/login');
+    // Check if this is an API request or browser request
+    const isApiRequest = request.headers.accept?.includes('application/json');
+    
+    if (isApiRequest) {
+      // Angular/API client - return JSON error
+      return response.status(401).json({ message: 'Unauthorized' });
+    } else {
+      // Browser/SSR - redirect to login page
+      return response.redirect('/login');
+    }
   }
 
   try
   {
     const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET!) as UserPayload;
-
     request.user = decoded;
-
     return next();
   }
   catch (error)
   {
-    if (!refreshToken)
-      return response.redirect('/login');
+    if (!refreshToken) {
+      const isApiRequest = request.headers.accept?.includes('application/json');
+      
+      if (isApiRequest) {
+        return response.status(401).json({ message: 'Unauthorized' });
+      } else {
+        return response.redirect('/login');
+      }
+    }
   }
 
   try
@@ -61,6 +75,12 @@ export async function isAuthenticated(request: Request, response: Response, next
   }
   catch (refreshErr)
   {
-    return response.redirect('/login');
+    const isApiRequest = request.headers.accept?.includes('application/json');
+    
+    if (isApiRequest) {
+      return response.status(401).json({ message: 'Unauthorized' });
+    } else {
+      return response.redirect('/login');
+    }
   }
 }
