@@ -174,12 +174,13 @@ export default class PostService
 
             const keys = await redisClient.keys(`usersconnect:user:${post.author._id}:posts:*`);
 
-if (keys.length > 0) {
-    // Strip the prefix from each key before deleting
-    const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
+            if (keys.length > 0)
+            {
+                // Strip the prefix from each key before deleting
+                const keysWithoutPrefix = keys.map(key => key.replace('usersconnect:', ''));
 
-    await redisClient.del(...keysWithoutPrefix);
-}
+                await redisClient.del(...keysWithoutPrefix);
+            }
 
             await redisClient.del('feed:page:1');
             await redisClient.del(`user:${post.author._id}:comments:likes:count`);

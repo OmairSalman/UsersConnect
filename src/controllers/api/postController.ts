@@ -26,6 +26,16 @@ export default class PostController
         return response.status(200).json(post);
     }
 
+    async getPostsByUserId(request: Request, response: Response)
+    {
+        const userId = asString(request.params.userId)!;
+        const page = parseInt(asString(request.query.page as any) ?? '1', 10) || 1;
+        const limit = parseInt(asString(request.query.limit as any) ?? '10', 10) || 10;
+        const posts = await postService.getPostsByUserId(userId, page, limit);
+        if(!posts) return response.status(404).send('No posts yet');
+        return response.status(200).json(posts);
+    }
+
     async savePost(request: Request, response: Response)
     {
         let newPost = request.body;

@@ -21,6 +21,24 @@ dotenv.config();
 
 const app = express();
 
+// ============================================
+// CORS CONFIGURATION - ADD THIS
+// ============================================
+app.use((req, res, next) => {
+  // Allow requests from Angular dev server
+  res.header('Access-Control-Allow-Origin', 'http://192.168.1.3:4200');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
 app.engine('hbs', engine({
   extname: '.hbs',
   defaultLayout: 'main',
