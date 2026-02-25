@@ -92,6 +92,22 @@ export default class AuthController
             });
         }
 
+        if(request.body.password !== request.body.confirmPassword)
+        {
+            return {
+                success: false,
+                message: 'Passwords do not match'
+            };
+        }
+
+        if(request.body.password && !request.body.confirmPassword)
+        {
+            return {
+                success: false,
+                message: 'Please confirm your password'
+            };
+        }
+
         const newUser = result.user;
         
         const accessPayload: UserPayload = {
@@ -180,6 +196,12 @@ export default class AuthController
 
         if (result === 'success')
         {
+            response.cookie('resetEmail', email, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 10 * 60 * 1000 // 10 minutes
+            });
             // Always return success to prevent email enumeration
             return response.status(200).json({
                 success: true,
@@ -197,17 +219,23 @@ export default class AuthController
 
     async verifyResetCode(request: Request, response: Response)
     {
-        const { email, code } = request.body;
+        const { code } = request.body;
+        const email = request.cookies.resetEmail;
 
         if (!email || !code)
         {
-            return response.status(400).json({ message: 'Email and code are required' });
+            return response.status(400).json({ success: false, message: 'Email and code are required' });
         }
 
-        const sessionToken = await authService.verifyResetCode(email, code);
-
-        if (sessionToken)
+        const result = await authService.verifyResetCode(email, code);
+        if (typeof result === 'object' && !result.success)
         {
+            return response.status(400).json({result});
+        }
+        
+        if (typeof result === 'string')
+        {
+            const sessionToken = result;
             // Set session cookie
             response.cookie('resetSessionToken', sessionToken, {
                 httpOnly: true,
@@ -273,6 +301,13 @@ export default class AuthController
         {
             // Clear session cookie
             response.clearCookie('resetSessionToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                path: '/'
+            });
+
+            response.clearCookie('resetEmail', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax',

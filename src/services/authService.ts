@@ -36,7 +36,7 @@ export default class AuthService
         return 'error';
     }
 
-    async registerUser(newUser: User): Promise<{ success: boolean; message?: string; user?: PublicUser }>
+    async registerUser(newUser: { name: string, email: string, password: string, confirmPassword: string}): Promise<{ success: boolean; message?: string; user?: PublicUser }>
     {
         try
         {
@@ -139,17 +139,29 @@ export default class AuthService
      * @param code - 6-digit code from email
      * @returns Session token or null if invalid
      */
-    async verifyResetCode(email: string, code: string): Promise<string | null>
+    async verifyResetCode(email: string, code: string): Promise<string | {  success: boolean; message: string }>
     {
         try
         {
             // Get code from Redis
             const storedCode = await redisClient.get(`password-reset:${email}`);
 
-            if (!storedCode || storedCode !== code)
+            if(!storedCode)
+            {
+                logger.warn(`Reset code expired for ${email}`);
+                return {
+                    success: false,
+                    message: 'Reset code expired. Please request a new one.'
+                }
+            }
+
+            if (storedCode !== code)
             {
                 logger.warn(`Invalid reset code attempt for ${email}`);
-                return null;
+                return {
+                    success: false,
+                    message: 'Invalid reset code. Please check the code and try again.'
+                }
             }
 
             // Code is valid - generate session token
@@ -171,7 +183,10 @@ export default class AuthService
         catch (error)
         {
             logger.error('Error in verifyResetCode:', error);
-            return null;
+            return{
+                success: false,
+                message: `Error in verifyResetCode: ${error}`
+            }
         }
     }
 

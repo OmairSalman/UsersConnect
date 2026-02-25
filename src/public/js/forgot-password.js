@@ -30,10 +30,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
       const data = await res.json();
 
-      if (res.ok) {
-        // Store email in cookie for 15 minutes (same as reset code TTL)
-        document.cookie = `resetEmail=${encodeURIComponent(email)}; path=/; max-age=900; SameSite=Lax`;
-        
+      if (res.ok)
+      {
         // Redirect immediately to code entry page
         window.location.href = '/reset-password';
       } else {
