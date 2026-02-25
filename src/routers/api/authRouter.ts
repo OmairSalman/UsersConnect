@@ -9,6 +9,8 @@ const AuthRouter = Router();
 
 AuthRouter.post('/login', authController.loginUser);
 
+AuthRouter.get('/me', isAuthenticated, authController.getCurrentUser);
+
 AuthRouter.post('/register', UserValidator, authController.registerUser);
 
 AuthRouter.get('/logout', authController.logoutUser);

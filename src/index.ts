@@ -16,6 +16,7 @@ import dotenv from 'dotenv';
 import hbsHelpers from './views/helpers/hbsHelpers';
 
 import logger from './config/logger';
+import ConfigRouter from './routers/api/configRouter';
 
 dotenv.config();
 
@@ -93,6 +94,7 @@ async function startServer() {
   app.use('/auth', AuthRouter);
   app.use('/posts', PostRouter);
   app.use('/comments', CommentRouter);
+  app.use('/config', ConfigRouter);
   
   // Start listening
   app.listen(3000, () => { 

@@ -4,6 +4,7 @@ import { S3Service } from "../../services/s3Service";
 import { isS3Configured } from "../../utils/s3Config";
 import { asString } from "../../utils/asString";
 import logger from '../../config/logger';
+import { Post } from "../../entities/postEntity";
 
 const postService = new PostService();
 
@@ -16,6 +17,16 @@ export default class PostController
         const posts = await postService.getPosts(page, limit);
         if(!posts) return response.status(404).send('No posts yet');
         return response.status(200).json(posts);
+    }
+
+    async getFeed(request: Request, response: Response)
+    {
+        const page = parseInt(asString(request.query.page as any) ?? '1', 10) || 1;
+        const posts = await postService.getPosts(page, 10);
+        const postsCount = await Post.count();
+        const limit = parseInt(asString(request.query.limit as any) ?? '10', 10) || 10;
+        const totalPages = Math.ceil(postsCount/limit);
+        return response.status(200).json({ posts, page, totalPages, limit });
     }
 
     async getPost(request: Request, response: Response)

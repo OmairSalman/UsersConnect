@@ -1,14 +1,16 @@
 import { Request, Response } from "express";
 import UserService from "../../services/userService";
 import PostService from "../../services/postService";
+import CommentService from "../../services/commentService";
 import { asString } from "../../utils/asString";
 import jwt from 'jsonwebtoken';
-import multer from 'multer';
 import logger from "../../config/logger";
 import { RefreshPayload, UserPayload } from "../../config/express";
+import { Post } from "../../entities/postEntity";
 
 const userService = new UserService();
 const postService = new PostService();
+const commentService = new CommentService();
 
 export default class UserController
 {
@@ -26,7 +28,32 @@ export default class UserController
         if(!user) response.status(404).send('User not found')
         else
         {
-            response.status(200).json(user);
+            response.status(200).json({ user: user });
+        }
+    }
+
+    async getUserProfile(request: Request, response: Response)
+    {
+        const userId = asString(request.params.id)!;
+        const user = await userService.getUserById(userId);
+        if(!user) response.status(404).send('User not found');
+        else
+        {
+            const page = parseInt(asString(request.query.page as any) ?? '1', 10) || 1;
+            const limit = parseInt(asString(request.query.limit as any) ?? '10', 10) || 10;
+            const userPosts = await postService.getPostsByUserId(userId, page, limit);
+            if(!userPosts) return response.status(404).send('No posts yet');
+            const postsCount = await Post.countBy({ author_id: user._id });
+            const totalPages = Math.ceil(postsCount/limit);
+            const postsLikes = await postService.countUserPostsLikes(user._id.toString());
+            const commentsLikes = await commentService.countUserCommentsLikes(user._id.toString());
+            response.status(200).json({ 
+                user: user, 
+                posts: userPosts,
+                totalPages: totalPages,
+                postsLikes: postsLikes,
+                commentsLikes: commentsLikes
+            });
         }
     }
 

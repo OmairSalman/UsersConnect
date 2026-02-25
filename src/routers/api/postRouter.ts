@@ -23,9 +23,11 @@ const upload = multer({
     }
   });
 
-//PostRouter.use('/', isAuthenticated);
+PostRouter.use('/', isAuthenticated);
 
 PostRouter.get('/', postController.getAllPosts);
+
+PostRouter.get('/feed', postController.getFeed);
 
 PostRouter.get('/:postId', postController.getPost);
 

@@ -26,7 +26,9 @@ UserRouter.get('/', isAdmin, usersController.getUsers);
 
 UserRouter.get('/search', usersController.searchUsers);
 
-UserRouter.get('/:id', isAdmin, usersController.getUserById);
+UserRouter.get('/:id', usersController.getUserById);
+
+UserRouter.get('/:id/profile', usersController.getUserProfile);
 
 UserRouter.put('/:id', usersController.updateUser);
 

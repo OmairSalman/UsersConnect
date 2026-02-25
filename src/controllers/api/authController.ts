@@ -2,10 +2,14 @@ import { Request, Response } from "express";
 import AuthService from "../../services/authService";
 import jwt from 'jsonwebtoken';
 import { User } from "../../entities/userEntity";
-import { isEmailVerified } from "../../middlewares/auth/isEmailVerified";
 import { RefreshPayload, UserPayload } from "../../config/express";
 
 const authService = new AuthService();
+
+const isApiRequest = (request: Request) =>
+{
+  return request.headers.accept?.includes('application/json');
+};
 
 export default class AuthController
 {
@@ -55,9 +59,26 @@ export default class AuthController
                 sameSite: "lax",
                 maxAge: 1000 * 60 * 60 * 24 * 30
             });
-
-            response.redirect('/feed?page=1');
+  
+            if (isApiRequest(request))
+            {
+                // Angular client - return JSON
+                return response.status(200).json({ 
+                    message: 'Login successful',
+                    user: accessPayload  // The user data
+                });
+            }
+            else
+            {
+                // Browser/SSR - redirect
+                return response.redirect('/feed');
+            }
         }
+    }
+
+    getCurrentUser(request: Request, response: Response)
+    {
+        return response.json({ user: request.user });
     }
 
     async registerUser(request: Request, response: Response)
@@ -106,7 +127,8 @@ export default class AuthController
 
         return response.status(200).json({
             success: true,
-            message: 'Registration successful'
+            message: 'Registration successful',
+            user: accessPayload
         });
     }
 
@@ -125,7 +147,15 @@ export default class AuthController
             sameSite: "lax",
             path: "/",
         });
-        response.redirect('/');
+  
+        if (isApiRequest(request))
+        {
+            return response.status(200).json({ message: 'Logged out successfully' });
+        }
+        else
+        {
+            response.redirect('/');
+        }
     }
 
     async verifyPassword(request: Request, response: Response)
