@@ -36,7 +36,7 @@ export default class WebController
             response.redirect('/');
         else
         {
-            const page = parseInt(asString(request.query.page as any) ?? '1', 10) || 1;
+            const page = parseInt(asString(request.query.page as string)!) || 1;
             const posts = await postService.getPosts(page, 10);
             const postsCount = await Post.count();
             const totalPages = Math.ceil(postsCount/10);
@@ -84,7 +84,7 @@ export default class WebController
         let posts;
         if(user)
         {
-            const page = parseInt(asString(request.query.postsPage as any) ?? '1', 10) || 1;
+            const page = parseInt(asString(request.query.postsPage as string)!) || 1;
             posts = await postService.getPostsByUserId(user._id, page, 10);
             if(posts)
             {
@@ -111,7 +111,7 @@ export default class WebController
     {
         const currentUser = request.user;
         const userId = asString(request.params.userId)!;
-        const page = parseInt(asString(request.query.postsPage as any) ?? '1', 10) || 1;
+        const page = parseInt(asString(request.query.postsPage as string)!) || 1;
         const s3Enabled = isS3Configured();
         const user = await userService.getUserById(userId);
         if(user)

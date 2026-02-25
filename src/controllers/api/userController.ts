@@ -39,8 +39,8 @@ export default class UserController
         if(!user) response.status(404).send('User not found');
         else
         {
-            const page = parseInt(asString(request.query.page as any) ?? '1', 10) || 1;
-            const limit = parseInt(asString(request.query.limit as any) ?? '10', 10) || 10;
+            const page = parseInt(asString(request.query.page as string)!);
+            const limit = parseInt(asString(request.query.limit as string)!) || 10;
             const userPosts = await postService.getPostsByUserId(userId, page, limit);
             if(!userPosts) return response.status(404).send('No posts yet');
             const postsCount = await Post.countBy({ author_id: user._id });
@@ -48,11 +48,12 @@ export default class UserController
             const postsLikes = await postService.countUserPostsLikes(user._id.toString());
             const commentsLikes = await commentService.countUserCommentsLikes(user._id.toString());
             response.status(200).json({ 
-                user: user, 
+                user, 
                 posts: userPosts,
-                totalPages: totalPages,
-                postsLikes: postsLikes,
-                commentsLikes: commentsLikes
+                totalPages,
+                limit,
+                postsLikes,
+                commentsLikes
             });
         }
     }
@@ -157,7 +158,7 @@ export default class UserController
 
     async searchUsers(request: Request, response: Response)
     {
-        const searchTerm = asString(request.query.search as any);
+        const searchTerm = asString(request.query.search as string);
         if (!searchTerm) return response.status(400).send('Search query is required');
         const filteredUsers = await userService.searchUsers(searchTerm);
         response.status(200).json(filteredUsers);
@@ -166,7 +167,7 @@ export default class UserController
     async getUserPosts(request: Request, response: Response)
     {
         let userId = asString(request.params.userId)!;
-        const page = parseInt(asString(request.query.page as any) ?? '1', 10) || 1;
+        const page = parseInt(asString(request.query.page as string)!) || 1;
         const posts = await postService.getPostsByUserId(userId, page, 10);
         if(!posts) return response.status(404).send("No posts by user");
         return response.status(200).send({message: `Found posts of user with id ${userId}`, posts: posts});
