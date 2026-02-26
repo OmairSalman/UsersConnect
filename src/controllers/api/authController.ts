@@ -222,9 +222,15 @@ export default class AuthController
         const { code } = request.body;
         const email = request.cookies.resetEmail;
 
-        if (!email || !code)
+        if (!email)
         {
-            return response.status(400).json({ success: false, message: 'Email and code are required' });
+            alert('Please start from the forgot password page.');
+            return response.redirect('/forgot-password');
+        }
+
+        if (!code)
+        {
+            return response.status(400).json({ success: false, message: 'Code is required' });
         }
 
         const result = await authService.verifyResetCode(email, code);
@@ -232,7 +238,7 @@ export default class AuthController
         {
             return response.status(400).json({result});
         }
-        
+
         if (typeof result === 'string')
         {
             const sessionToken = result;
@@ -254,6 +260,37 @@ export default class AuthController
             return response.status(401).json({
                 success: false,
                 message: 'Invalid or expired code'
+            });
+        }
+    }
+
+    async resendPasswordResetCode(request: Request, response: Response)
+    {
+        const email = request.cookies.resetEmail;
+        
+        if (!email)
+        {
+            return response.status(400).json({
+                success: false,
+                message: 'No active reset session. Please start over.'
+            });
+        }
+        
+        // Reuse the existing password reset logic
+        const result = await authService.requestPasswordReset(email);
+        
+        if (result === 'success')
+        {
+            return response.status(200).json({
+                success: true,
+                message: 'Reset code sent to your email'
+            });
+        }
+        else
+        {
+            return response.status(500).json({
+                success: false,
+                message: 'Failed to send reset code. Please try again.'
             });
         }
     }
@@ -333,6 +370,22 @@ export default class AuthController
                 message: 'An error occurred. Please try again.'
             });
         }
+    }
+
+    checkResetSession(request: Request, response: Response)
+    {
+        const resetEmail = request.cookies.resetEmail;
+        
+        if (!resetEmail) {
+            return response.status(404).json({ 
+                hasSession: false,
+                message: 'No reset session found' 
+            });
+        }
+        
+        return response.status(200).json({ 
+            hasSession: true 
+        });
     }
 
     async requestEmailVerification(request: Request, response: Response)

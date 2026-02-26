@@ -21,7 +21,11 @@ AuthRouter.post('/forgot-password', authController.requestPasswordReset);
 
 AuthRouter.post('/verify-reset-code', authController.verifyResetCode);
 
+AuthRouter.post('/resend-reset-code', authController.resendPasswordResetCode);
+
 AuthRouter.post('/reset-password', authController.resetPasswordWithSession);
+
+AuthRouter.get('/check-reset-session', authController.checkResetSession);
 
 AuthRouter.post('/email-verification/request', isAuthenticated, authController.requestEmailVerification);
 

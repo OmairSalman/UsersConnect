@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // Disable button
     submitBtn.disabled = true;
     submitBtn.textContent = 'Resetting...';
 
@@ -45,12 +44,16 @@ document.addEventListener('DOMContentLoaded', function() {
       const data = await res.json();
 
       if (res.ok) {
-        // Success! Redirect to login
+        // Success! Backend cleared both cookies
         alert('Password reset successfully! Please log in with your new password.');
         window.location.href = '/login';
       } else {
-        if (data.message === 'Session expired or invalid') {
-          alert('Your session has expired. Please request a new reset code.');
+        // Check for session expiration
+        if (data.message === 'No active reset session' || 
+            data.message === 'Session expired or invalid' ||
+            data.message?.includes('session') || 
+            data.message?.includes('expired')) {
+          alert('Your session has expired. Please start over.');
           window.location.href = '/forgot-password';
         } else {
           errorDiv.textContent = data.message || 'An error occurred';
