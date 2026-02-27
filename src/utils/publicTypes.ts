@@ -17,9 +17,9 @@ export type MinimalUser = {
 export type PublicComment = {
   _id: string;
   content: string;
-  author: Pick<PublicUser, '_id' | 'name' | 'avatarURL'>;
-  likes: Pick<PublicUser, '_id' | 'name' | 'avatarURL'>[];
-  dislikes: Pick<PublicUser, '_id' | 'name' | 'avatarURL'>[];
+  author: MinimalUser;
+  likes: MinimalUser[];
+  dislikes: MinimalUser[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -29,9 +29,9 @@ export type PublicPost = {
   title: string;
   content: string;
   imageURL?: string;
-  author: Pick<PublicUser, '_id' | 'name' | 'avatarURL'>;
-  likes: Pick<PublicUser, '_id' | 'name' | 'avatarURL'>[];
-  dislikes: Pick<PublicUser, '_id' | 'name' | 'avatarURL'>[];
+  author: MinimalUser;
+  likes: MinimalUser[];
+  dislikes: MinimalUser[];
   comments: PublicComment[];
   createdAt: Date;
   updatedAt: Date;
