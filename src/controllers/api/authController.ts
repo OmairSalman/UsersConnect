@@ -392,7 +392,8 @@ export default class AuthController
     {
         const userId = request.user?._id;
         
-        if (!userId) {
+        if (!userId)
+        {
             return response.status(401).json({ success: false, message: 'Unauthorized' });
         }
         

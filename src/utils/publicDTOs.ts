@@ -1,7 +1,7 @@
 import { User } from "../entities/userEntity";
 import { Comment } from "../entities/commentEntity";
 import { Post } from "../entities/postEntity";
-import { PublicUser, PublicComment, PublicPost } from "./publicTypes";
+import { PublicUser, PublicComment, PublicPost, MinimalUser } from "./publicTypes";
 
 export function userToPublic(user: User): PublicUser {
   return {
@@ -15,13 +15,21 @@ export function userToPublic(user: User): PublicUser {
   };
 }
 
+export function userToMinimal(user: User): MinimalUser {
+  return {
+    _id: user._id,
+    name: user.name,
+    avatarURL: user.avatarURL
+  };
+}
+
 export function commentToPublic(comment: Comment): PublicComment {
   return {
     _id: comment._id,
     content: comment.content,
-    author: userToPublic(comment.author),
-    likes: comment.likes.map(userToPublic),
-    dislikes: comment.dislikes.map(userToPublic),
+    author: userToMinimal(comment.author),
+    likes: comment.likes.map(userToMinimal),
+    dislikes: comment.dislikes.map(userToMinimal),
     createdAt: comment.createdAt,
     updatedAt: comment.updatedAt,
   };
@@ -33,9 +41,9 @@ export function postToPublic(post: Post): PublicPost {
     title: post.title,
     content: post.content,
     imageURL: post.imageURL,
-    author: userToPublic(post.author),
-    likes: post.likes.map(userToPublic),
-    dislikes: post.dislikes.map(userToPublic),
+    author: userToMinimal(post.author),
+    likes: post.likes.map(userToMinimal),
+    dislikes: post.dislikes.map(userToMinimal),
     comments: (post.comments ?? [])
       .slice()
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())

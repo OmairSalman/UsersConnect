@@ -106,7 +106,7 @@ export default class PostController
     {
         let postId = asString(request.params.postId)!;
         const deletedPost = await postService.deletePost(postId);
-        if(!deletedPost) return response.status(404).send("Post not found");
+        if(!deletedPost) return response.status(404).json({message: "Post not found"});
         return response.status(200).json({message: "Post deleted successfully", post: deletedPost});
     }
 
@@ -115,7 +115,7 @@ export default class PostController
         let postId = asString(request.params.postId)!;
         let user = request.user!;
         const likedPost = await postService.like(postId, user);
-        if(!likedPost) return response.status(404).send("Post not found");
+        if(!likedPost) return response.status(404).json({message: "Post not found"});
         return response.status(200).json({
             message: `Liked post ${postId} by ${user._id} successfully.`, 
             liked: true, 
