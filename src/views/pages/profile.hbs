@@ -61,15 +61,24 @@
   data-page="{{postsPage}}" 
   data-limit="{{limit}}" 
   data-total-pages="{{totalPages}}">
-  {{#if (gt posts.length 0)}}
+  {{#if posts.length}}
     {{#each posts}}
       {{> postCard post=this currentUser=../currentUser s3Enabled=../s3Enabled}}
     {{/each}}
   {{else}}
-    {{#if (isOwner currentUser._id user._id)}}
-      <p>You didn't make any posts yet, how about you <a href="/feed">create a new one?</a></p>
+    {{#if (gt postsPage totalPages)}}
+      <p class="text-center my-5">You've gone too far! There aren't enough posts to reach this page!<br>Why don't you
+      {{#if (isOwner currentUser._id user._id)}}
+        <a href='/feed'>go post some more?</a>
+      {{else}}
+        <a href="/profile/{{user._id}}">go back to {{user.name}}'s first page?</a>
+      {{/if}}
     {{else}}
-      <p>User has no posts.</p>
+      {{#if (isOwner currentUser._id user._id)}}
+        <p>You didn't make any posts yet, how about you <a href="/feed">create a new one?</a></p>
+      {{else}}
+        <p>{{user.name}} has no posts yet.</p>
+      {{/if}}
     {{/if}}
   {{/if}}
 </div>
