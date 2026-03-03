@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { isS3Configured } from "../../utils/s3Config";
-import { isSMTPConfigured } from "../../utils/emailConfig";
+import { isSMTPConfigured } from "../../utils/smtpConfig";
 
 export default class ConfigController
 {

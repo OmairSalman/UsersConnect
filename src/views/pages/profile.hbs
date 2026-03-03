@@ -12,11 +12,13 @@
       <p class="mb-1">
         {{user.email}}
         
-        <!-- Verification Badge (only visible to owner) -->
-        {{#if user.isEmailVerified}}
-          <i class="fa-solid fa-circle-check text-success ms-2" title="Email Verified"></i>
-        {{else}}
-          <i class="fa-solid fa-circle-exclamation ms-2" style="color: #dc3545;" title="Email Not Verified"></i>
+        <!-- Verification Badge (only visible to owner, only when SMTP is enabled) -->
+        {{#if smtpEnabled}}
+          {{#if user.isEmailVerified}}
+            <i class="fa-solid fa-circle-check text-success ms-2" title="Email Verified"></i>
+          {{else}}
+            <i class="fa-solid fa-circle-exclamation ms-2" style="color: #dc3545;" title="Email Not Verified"></i>
+          {{/if}}
         {{/if}}
         
         <!-- Privacy Badge (only visible to owner) -->
@@ -28,12 +30,14 @@
       </p>
       
       <!-- Action buttons -->
-      {{#unless user.isEmailVerified}}
-        <button type="button" class="btn btn-sm btn-success mb-2" id="verify-email-btn-profile">
-          <i class="fa-solid fa-envelope"></i> Verify Email
-        </button>
-        <br>
-      {{/unless}}
+      {{#if smtpEnabled}}
+        {{#unless user.isEmailVerified}}
+          <button type="button" class="btn btn-sm btn-success mb-2" id="verify-email-btn-profile">
+            <i class="fa-solid fa-envelope"></i> Verify Email
+          </button>
+          <br>
+        {{/unless}}
+      {{/if}}
       
       <a href="/profile/edit" class="btn btn-outline-primary edit-profile-btn">
         <i class="fa-solid fa-pen"></i> Edit profile
@@ -101,11 +105,12 @@
   {{/if}}
 </nav>
 
+{{#if smtpEnabled}}
 <!-- Profile page specific JS -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   const verifyEmailBtn = document.getElementById('verify-email-btn-profile');
-  
+
   if (verifyEmailBtn) {
     verifyEmailBtn.addEventListener('click', function() {
       if (typeof window.openVerifyEmailModal === 'function') {
@@ -115,3 +120,4 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+{{/if}}

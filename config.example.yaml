@@ -1,0 +1,97 @@
+# UsersConnect — Example Configuration File
+#
+# Copy this file to config.yaml and customize for your deployment.
+# Environment variables ALWAYS take priority over values in this file.
+#
+# SECURITY: Avoid storing secrets (passwords, JWT secrets, API keys) in config.yaml.
+# Use environment variables for sensitive values — they are excluded from git by .gitignore.
+#
+# Fields marked (required) must be set via this file OR the corresponding env var.
+# Fields marked (optional) can be omitted; defaults are used when absent.
+#
+# NOTE: The application always listens on internal port 3000 (matching Dockerfile EXPOSE 3000).
+# To expose a different port on the host, use Docker port mapping:
+#   docker run -p 8080:3000 usersconnect  (host 8080 → container 3000)
+
+# ── Application ──────────────────────────────────────────────────────────────
+app:
+  # 'development' enables TypeORM schema sync and disables view caching.
+  nodeEnv: production   # env: NODE_ENV
+
+# ── Database (MySQL) ──────────────────────────────────────────────────────────
+database:
+  host: localhost         # (required) env: DATABASE_HOST
+  username: root          # (required) env: DATABASE_USERNAME
+  # Recommend setting via env var: DATABASE_PASSWORD
+  password: ""            # (required) env: DATABASE_PASSWORD
+  name: usersconnect      # (required) env: DATABASE_NAME
+  # Number of times to retry the initial DB connection before exiting
+  connectionRetries: 10   # (optional)
+  # Milliseconds between each retry attempt
+  retryDelay: 5000        # (optional)
+
+# ── Redis ─────────────────────────────────────────────────────────────────────
+redis:
+  host: localhost          # (required) env: REDIS_HOST
+  # Recommend setting via env var: REDIS_PASSWORD
+  # password: ""           # (optional) env: REDIS_PASSWORD
+
+  # Cache TTL values in seconds
+  ttl:
+    default: 600           # 10 min — general cache (feed page 1)
+    short: 300             # 5 min  — like count caches
+    long: 3600             # 1 hour — paginated user posts
+    emailVerification: 600 # 10 min — email verification codes
+    passwordReset: 600     # 10 min — password reset codes
+    session: 300           # 5 min  — temporary session tokens
+
+# ── JWT Authentication ────────────────────────────────────────────────────────
+jwt:
+  # Recommend setting via env vars: ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET
+  # accessTokenSecret: ""   # (required) env: ACCESS_TOKEN_SECRET
+  # refreshTokenSecret: ""  # (required) env: REFRESH_TOKEN_SECRET
+  accessTokenExpiry: "15m"  # (optional) jsonwebtoken duration string
+  refreshTokenExpiry: "30d" # (optional) jsonwebtoken duration string
+
+# ── Gravatar (optional) ───────────────────────────────────────────────────────
+gravatar:
+  # apiKey: ""  # env: GRAVATAR_API_KEY
+
+# ── S3 Image Storage (optional) ───────────────────────────────────────────────
+# Omit this section (or leave all fields empty) to disable image uploads.
+# When configured, the image upload UI appears for posts and profile pictures.
+#
+# s3:
+#   accessKey: ""     # env: S3_ACCESS_KEY
+#   secretKey: ""     # env: S3_SECRET_KEY
+#   bucketName: ""    # env: S3_BUCKET_NAME
+#   region: us-east-1 # env: S3_REGION
+#   # For non-AWS providers (MinIO, Cloudflare R2, DigitalOcean Spaces):
+#   # endpoint: http://localhost:9000  # env: S3_ENDPOINT
+#   # publicUrl: https://cdn.example.com  # env: S3_PUBLIC_URL
+
+# ── Email / SMTP (optional) ───────────────────────────────────────────────────
+# Omit this section (or leave host/user/password empty) to disable transactional email.
+# Required for: password reset, email verification, email change confirmation.
+#
+# smtp:
+#   host: smtp.example.com  # env: SMTP_HOST
+#   port: 465               # env: SMTP_PORT
+#   secure: true            # env: SMTP_SECURE ('true' / 'false')
+#   user: ""                # env: SMTP_USER
+#   password: ""            # env: SMTP_PASSWORD
+#   from:
+#     name: UsersConnect    # env: SMTP_FROM_NAME
+#     email: ""             # env: SMTP_FROM_EMAIL
+
+# ── File Upload Limits ────────────────────────────────────────────────────────
+upload:
+  maxProfilePictureSizeBytes: 5242880   # 5 MB
+  maxPostImageSizeBytes: 10485760       # 10 MB
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging:
+  level: info           # error | warn | info | debug  — env: LOG_LEVEL
+  directory: /logs      # Absolute path recommended for production
+  maxFileSize: 10485760 # 10 MB per log file before rotation
+  maxFiles: 5           # Number of rotated files to retain

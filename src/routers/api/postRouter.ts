@@ -6,6 +6,7 @@ import { isEmailVerified } from '../../middlewares/auth/isEmailVerified';
 import { isPostAuthor } from '../../middlewares/auth/isPostAuthor';
 import multer from 'multer';
 import { Post } from '../../entities/postEntity';
+import { config } from '../../config';
 
 const postController = new PostController();
 
@@ -13,7 +14,7 @@ const PostRouter = Router();
 
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 },
+    limits: { fileSize: config.upload.maxPostImageSizeBytes },
     fileFilter: (req, file, cb) => {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);

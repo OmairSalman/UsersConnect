@@ -1,3 +1,8 @@
+// config must be imported first — it loads and validates all configuration
+// (including env vars and config.yaml) before any other module reads process.env.
+import 'dotenv/config';
+import { config } from './config';
+
 import express from 'express';
 import path from 'path';
 
@@ -12,18 +17,15 @@ import CommentRouter from './routers/api/commentRouter';
 
 import AppDataSource from './config/dataSource';
 
-import dotenv from 'dotenv';
 import hbsHelpers from './views/helpers/hbsHelpers';
 
 import logger from './config/logger';
 import ConfigRouter from './routers/api/configRouter';
 
-dotenv.config();
-
 const app = express();
 
 // ============================================
-// CORS CONFIGURATION - ADD THIS
+// CORS CONFIGURATION
 // ============================================
 app.use((req, res, next) => {
   // Allow requests from Angular dev server
@@ -96,9 +98,11 @@ async function startServer() {
   app.use('/comments', CommentRouter);
   app.use('/config', ConfigRouter);
   
-  // Start listening
-  app.listen(3000, () => { 
-    logger.info(`🚀 Server running at http://localhost:3000/`);
+  // Internal port is fixed to match Dockerfile EXPOSE 3000.
+  // Use Docker port mapping for external port changes: docker run -p 8080:3000
+  const PORT = 3000;
+  app.listen(PORT, () => {
+    logger.info(`🚀 Server running on port ${PORT}`);
   });
 }
 

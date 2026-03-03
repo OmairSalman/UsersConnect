@@ -7,6 +7,7 @@ import { UserPayload, RefreshPayload } from "../../config/express";
 import crypto from 'crypto';
 import { Post } from "../../entities/postEntity";
 import { isS3Configured } from "../../utils/s3Config";
+import { isSMTPConfigured } from "../../utils/smtpConfig";
 import { asString } from "../../utils/asString";
 import redisClient from "../../config/redis";
 
@@ -41,14 +42,16 @@ export default class WebController
             const postsCount = await Post.count();
             const totalPages = Math.ceil(postsCount/10);
             const s3Enabled = isS3Configured();
+            const smtpEnabled = isSMTPConfigured();
             response.render('pages/feed', {
-                currentUser: request.user, 
-                currentUserId: request.user._id, 
-                posts: posts, 
-                page: page, 
-                limit: 10, 
+                currentUser: request.user,
+                currentUserId: request.user._id,
+                posts: posts,
+                page: page,
+                limit: 10,
                 totalPages: totalPages,
-                s3Enabled: s3Enabled
+                s3Enabled: s3Enabled,
+                smtpEnabled: smtpEnabled
             });
         }
     }
@@ -59,9 +62,9 @@ export default class WebController
         const refreshToken = request.cookies.refreshToken;
         if (!accessToken)
         {
-            if(!refreshToken) return response.render('pages/login');
+            if(!refreshToken) return response.render('pages/login', { smtpEnabled: isSMTPConfigured() });
         }
-    
+
         return response.redirect('/feed');
     }
 
@@ -81,6 +84,7 @@ export default class WebController
     {
         const user = request.user;
         const s3Enabled = isS3Configured();
+        const smtpEnabled = isSMTPConfigured();
         let posts;
         if(user)
         {
@@ -93,15 +97,16 @@ export default class WebController
                 const postsLikes = await postService.countUserPostsLikes(user._id.toString());
                 const commentsLikes = await commentService.countUserCommentsLikes(user._id.toString());
                 response.render('pages/profile', {
-                    user: user, 
-                    currentUser: user, 
-                    posts: posts, 
-                    postsLikes: postsLikes, 
-                    commentsLikes: commentsLikes, 
-                    postsPage: page, 
-                    limit: 10, 
+                    user: user,
+                    currentUser: user,
+                    posts: posts,
+                    postsLikes: postsLikes,
+                    commentsLikes: commentsLikes,
+                    postsPage: page,
+                    limit: 10,
                     totalPages: totalPages,
-                    s3Enabled: s3Enabled
+                    s3Enabled: s3Enabled,
+                    smtpEnabled: smtpEnabled
                 });
             }
         }
@@ -113,6 +118,7 @@ export default class WebController
         const userId = asString(request.params.userId)!;
         const page = parseInt(asString(request.query.postsPage as string)!) || 1;
         const s3Enabled = isS3Configured();
+        const smtpEnabled = isSMTPConfigured();
         const user = await userService.getUserById(userId);
         if(user)
         {
@@ -124,15 +130,16 @@ export default class WebController
                 const postsLikes = await postService.countUserPostsLikes(userId.toString());
                 const commentsLikes = await commentService.countUserCommentsLikes(userId.toString());
                 response.render('pages/profile', {
-                    user: user, 
+                    user: user,
                     currentUser: currentUser,
-                    posts: posts, 
-                    postsLikes: postsLikes, 
-                    commentsLikes: commentsLikes, 
-                    postsPage: page, 
-                    limit: 10, 
+                    posts: posts,
+                    postsLikes: postsLikes,
+                    commentsLikes: commentsLikes,
+                    postsPage: page,
+                    limit: 10,
                     totalPages: totalPages,
-                    s3Enabled: s3Enabled
+                    s3Enabled: s3Enabled,
+                    smtpEnabled: smtpEnabled
                 });
             }
         }
@@ -142,7 +149,8 @@ export default class WebController
     {
         const user = request.user;
         const s3Enabled = isS3Configured();
-        return response.render('pages/editProfile', {currentUser: user, s3Enabled: s3Enabled, hasCustomAvatar: !user?.avatarURL.includes('gravatar.com')});
+        const smtpEnabled = isSMTPConfigured();
+        return response.render('pages/editProfile', { currentUser: user, s3Enabled: s3Enabled, smtpEnabled: smtpEnabled, hasCustomAvatar: !user?.avatarURL.includes('gravatar.com') });
     }
 
     async adminUsersPanel(request: Request, response: Response)
@@ -190,46 +198,52 @@ export default class WebController
 
     forgotPassword(request: Request, response: Response)
     {
+        if (!isSMTPConfigured()) return response.redirect('/');
+
         const accessToken = request.cookies.accessToken;
         const refreshToken = request.cookies.refreshToken;
-        
+
         // Redirect if already logged in
         if (accessToken || refreshToken) {
             return response.redirect('/feed');
         }
-        
+
         return response.render('pages/forgotPassword');
     }
 
     resetPassword(request: Request, response: Response)
     {
+        if (!isSMTPConfigured()) return response.redirect('/');
+
         const accessToken = request.cookies.accessToken;
         const refreshToken = request.cookies.refreshToken;
-        
+
         // Redirect if already logged in
         if (accessToken || refreshToken) {
             return response.redirect('/feed');
         }
-        
+
         return response.render('pages/resetPassword');
     }
 
     async resetPasswordConfirm(request: Request, response: Response)
     {
+        if (!isSMTPConfigured()) return response.redirect('/');
+
         const sessionToken = request.cookies.resetSessionToken;
-        
+
         if (!sessionToken) {
             // No session - redirect to forgot password
             return response.redirect('/forgot-password');
         }
-        
+
         // Check if session is valid
         const email = await redisClient.get(`reset-session:${sessionToken}`);
         if (!email) {
             // Session expired or invalid
             return response.redirect('/forgot-password');
         }
-        
+
         return response.render('pages/resetPasswordConfirm');
     }
 }

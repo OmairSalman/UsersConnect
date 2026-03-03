@@ -6,6 +6,7 @@ import { userToPublic } from "../utils/publicDTOs";
 import logger from '../config/logger';
 import redisClient from '../config/redis';
 import { EmailService } from './emailService';
+import { config } from '../config';
 
 const emailService = new EmailService();
 
@@ -113,10 +114,10 @@ export default class AuthService
             // Generate 6-digit code
             const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-            // Store in Redis with 10-minute TTL
+            // Store in Redis with configured password-reset TTL
             await redisClient.setex(
                 `password-reset:${email}`,
-                600, // 10 minutes
+                config.redis.ttl.passwordReset,
                 resetCode
             );
 
@@ -167,10 +168,10 @@ export default class AuthService
             // Code is valid - generate session token
             const sessionToken = crypto.randomBytes(32).toString('hex');
 
-            // Store session in Redis (5 minutes)
+            // Store session in Redis with configured session TTL
             await redisClient.setex(
                 `reset-session:${sessionToken}`,
-                300, // 5 minutes
+                config.redis.ttl.session,
                 email
             );
 
@@ -252,8 +253,8 @@ export default class AuthService
             // Generate 6-digit code
             const code = crypto.randomInt(100000, 999999).toString();
             
-            // Store in Redis with 10-minute TTL
-            await redisClient.setex(`email-verification:${user.email}`, 600, code);
+            // Store in Redis with configured email-verification TTL
+            await redisClient.setex(`email-verification:${user.email}`, config.redis.ttl.emailVerification, code);
             
             // Send email
             const emailSent = await emailService.sendVerificationEmail(user.email, user.name, code);
@@ -322,8 +323,8 @@ export default class AuthService
             // Generate 6-digit code
             const code = crypto.randomInt(100000, 999999).toString();
             
-            // Store in Redis with 10-minute TTL
-            await redisClient.setex(`email-change:current:${currentEmail}`, 600, code);
+            // Store in Redis with configured email-verification TTL
+            await redisClient.setex(`email-change:current:${currentEmail}`, config.redis.ttl.emailVerification, code);
             
             // Send email to CURRENT address
             const emailSent = await emailService.sendEmailChangeVerifyCurrent(currentEmail, user.name, code);
@@ -369,8 +370,8 @@ export default class AuthService
             // Generate 6-digit code
             const code = crypto.randomInt(100000, 999999).toString();
             
-            // Store new email and code with 10-minute TTL
-            await redisClient.setex(`email-change:new:${userId}`, 600, JSON.stringify({ newEmail, code }));
+            // Store new email and code with configured email-verification TTL
+            await redisClient.setex(`email-change:new:${userId}`, config.redis.ttl.emailVerification, JSON.stringify({ newEmail, code }));
             
             // Send email to NEW address
             const emailSent = await emailService.sendEmailChangeVerifyNew(newEmail, user.name, code);
@@ -403,8 +404,8 @@ export default class AuthService
             // Generate temporary session token
             const tempToken = crypto.randomBytes(32).toString('hex');
             
-            // Store temp token with 5-minute TTL
-            await redisClient.setex(`email-change:session:${userId}`, 300, tempToken);
+            // Store temp token with configured session TTL
+            await redisClient.setex(`email-change:session:${userId}`, config.redis.ttl.session, tempToken);
             
             // Clear the verification code
             await redisClient.del(`email-change:current:${email}`);

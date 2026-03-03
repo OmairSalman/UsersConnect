@@ -48,6 +48,9 @@
     </div>
   </div>
 
+  <!-- Expose SMTP status to client-side JS (set by controllers that render authenticated pages) -->
+  <script>window.smtpEnabled = {{#if smtpEnabled}}true{{else}}false{{/if}};</script>
+
   <!-- Verify Email JS -->
   <script src="/js/verify-email.js"></script>
 </body>

@@ -30,10 +30,12 @@
         <button type="submit" class="btn btn-lg btn-primary">Login</button>
       </div>
 
-      <!-- Optional: forgot password -->
+      <!-- Optional: forgot password (only shown when SMTP is configured) -->
+      {{#if smtpEnabled}}
       <div class="text-center mb-2">
         <a href="/forgot-password" class="text-decoration-none text-muted">Forgot password?</a>
       </div>
+      {{/if}}
 
       <!-- Optional: register link -->
       <div class="text-center">

@@ -36,6 +36,11 @@ coverage/
 !.env.example
 
 # ======================
+# Configuration
+# ======================
+config.yaml
+
+# ======================
 # IDEs and Editors
 # ======================
 .vscode/

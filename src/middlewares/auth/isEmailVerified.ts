@@ -1,6 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import { isSMTPConfigured } from '../../utils/smtpConfig';
 
 export const isEmailVerified = (request: Request, response: Response, next: NextFunction) => {
+    if (!isSMTPConfigured()) return next();
+
     if (!request.user) {
         return response.status(401).json({ 
             success: false, 

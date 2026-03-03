@@ -3,6 +3,7 @@ import UserController from '../../controllers/api/userController';
 import { isAuthenticated } from '../../middlewares/auth/isAuthenticated';
 import { isAdmin } from '../../middlewares/auth/isAdmin';
 import multer from 'multer';
+import { config } from '../../config';
 
 const usersController = new UserController();
 
@@ -10,7 +11,7 @@ const UserRouter = Router();
 
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit for profile pictures
+    limits: { fileSize: config.upload.maxProfilePictureSizeBytes },
     fileFilter: (req, file, cb) => {
       if (file.mimetype.startsWith('image/')) {
         cb(null, true);

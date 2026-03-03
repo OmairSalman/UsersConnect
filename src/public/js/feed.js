@@ -82,7 +82,7 @@ function hideDislikePopup() {
 // Check if response requires email verification
 function checkVerificationRequired(response, data) {
   if (response.status === 403 && data && data.requiresVerification) {
-    if (typeof window.showPleaseVerifyModal === 'function') {
+    if (window.smtpEnabled && typeof window.showPleaseVerifyModal === 'function') {
       window.showPleaseVerifyModal();
     }
     return true;

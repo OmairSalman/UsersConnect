@@ -6,6 +6,7 @@ import { PublicPost } from "../utils/publicTypes";
 import { UserPayload } from "../config/express";
 import { S3Service } from "./s3Service";
 import logger from '../config/logger';
+import { config } from '../config';
 
 export default class PostService
 {
@@ -31,7 +32,7 @@ export default class PostService
                 }
             );
             const safePosts = posts.map(postToPublic);
-            if(page === 1) await redisClient.setex(cacheKey, 600, JSON.stringify(safePosts));
+            if(page === 1) await redisClient.setex(cacheKey, config.redis.ttl.default, JSON.stringify(safePosts));
             return safePosts;
         }
         catch (error)
@@ -217,7 +218,7 @@ export default class PostService
             );
             if(!posts) return null;
             const safePosts = posts.map(postToPublic);
-            await redisClient.setex(cacheKey, 3600, JSON.stringify(safePosts));
+            await redisClient.setex(cacheKey, config.redis.ttl.long, JSON.stringify(safePosts));
             return safePosts;
         }
         catch (error)
@@ -247,7 +248,7 @@ export default class PostService
             posts.forEach(comment =>{
                 postsLikes += comment.likes.length;
             });
-            await redisClient.setex(cacheKey, 300, JSON.stringify(postsLikes));
+            await redisClient.setex(cacheKey, config.redis.ttl.short, JSON.stringify(postsLikes));
             return postsLikes;
         }
     }

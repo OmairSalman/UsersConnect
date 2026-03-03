@@ -6,6 +6,7 @@ import { User } from "../entities/userEntity";
 import { commentToPublic } from "../utils/publicDTOs";
 import { PublicComment } from "../utils/publicTypes";
 import logger from '../config/logger';
+import { config } from '../config';
 
 export default class CommentService
 {
@@ -63,7 +64,7 @@ export default class CommentService
             comments.forEach(comment =>{
                 commentsLikes += comment.likes.length;
             });
-            await redisClient.setex(cacheKey, 300, JSON.stringify(commentsLikes));
+            await redisClient.setex(cacheKey, config.redis.ttl.short, JSON.stringify(commentsLikes));
             return commentsLikes;
         }
     }
