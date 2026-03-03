@@ -67,6 +67,8 @@ Browser/API Client
 
 **CORS is disabled by default**: Only enable when a separate frontend (Angular, React, etc.) needs to access the API. When enabled, only origins listed in `config.cors.allowedOrigins` receive `Access-Control-Allow-Origin` headers. Configured via `config.yaml` or env vars (`CORS_ENABLED=true`, `CORS_ALLOWED_ORIGINS=http://localhost:4200,...`).
 
+**First-time setup wizard**: On first deployment (when no admin users exist), the `setupCheck` middleware redirects all requests to `/setup`. The wizard creates the first admin account and optionally writes S3, SMTP, and CORS configuration to `config.yaml`. The `/setup` route is registered before `setupCheck` so the wizard itself is always accessible. After the first admin is created, the cache is cleared and normal routing resumes. Accessing `/setup` when an admin already exists redirects to `/login`.
+
 **JWT auth with refresh tokens**: Access tokens (15 min) and refresh tokens are stored as HTTP-only cookies. `isAuthenticated` middleware silently refreshes the access token using the refresh token when it expires.
 
 **Password reset / email verification flow via Redis**: Temporary codes and session tokens are stored in Redis with short TTLs (password-reset: 10 min, reset-session: 5 min, email-verification: 10 min, email-change: 10 min).
@@ -109,6 +111,31 @@ Migration files live in `src/migrations/` (TypeScript, committed to git). The bu
 
 **Important:** Always review generated migrations before committing — TypeORM may not detect all edge cases (e.g. column renames vs drop+add). Test in staging before production.
 
+### First-Time Setup Wizard
+
+On first deployment (when no admin users exist), UsersConnect automatically redirects all requests to `/setup`. The wizard:
+1. Creates the first admin account (password hashed with bcrypt, Gravatar avatar set)
+2. Optionally configures S3 storage for image uploads
+3. Optionally configures SMTP for email features
+4. Optionally configures CORS for separate frontend applications
+5. Writes any optional config to `config.yaml` (merged with existing file if present)
+
+**Prerequisites (must be configured before the app can start):**
+- Database credentials (`DATABASE_HOST`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_NAME`)
+- Redis host (`REDIS_HOST`)
+- JWT secrets (`ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`)
+
+If these are missing, the app exits at config loading before the setup wizard runs.
+
+**Route registration order in `src/index.ts`:**
+1. `app.use('/setup', SetupRouter)` — setup route registered first, always accessible
+2. `app.use(setupCheck)` — redirects to `/setup` if no admin exists; skips static files
+3. All other routes — only reached after setup is complete
+
+**`setupCheck` middleware** (`src/middlewares/setupCheck.ts`): Uses a 5-second in-memory cache to avoid a DB query on every request. Call `clearAdminCache()` after creating the first admin. Skips check for `/js/`, `/css/`, `/images/` paths.
+
+**After setup:** `/setup` redirects to `/login` if an admin already exists. To reconfigure optional features, edit `config.yaml` directly or use environment variables.
+
 ### Source Layout
 
 ```
@@ -130,6 +157,7 @@ src/
 │   └── web/                # SSR page routes
 ├── middlewares/
 │   ├── auth/               # isAuthenticated, isAdmin, isPostAuthor, isCommentAuthor, isEmailVerified
+│   ├── setupCheck.ts       # Redirects to /setup when no admin exists; clears via clearAdminCache()
 │   └── validation/         # express-validator chains per resource
 ├── utils/
 │   ├── publicTypes.ts      # PublicUser, PublicPost, PublicComment, MinimalUser types

@@ -10,10 +10,12 @@ import { engine } from 'express-handlebars';
 import cookieParser from "cookie-parser";
 
 import WebRouter from './routers/web/webRouter';
+import SetupRouter from './routers/web/setupRouter';
 import UserRouter from './routers/api/userRouter';
 import AuthRouter from './routers/api/authRouter';
 import PostRouter from './routers/api/postRouter';
 import CommentRouter from './routers/api/commentRouter';
+import { setupCheck } from './middlewares/setupCheck';
 
 import AppDataSource from './config/dataSource';
 
@@ -103,6 +105,12 @@ async function startServer() {
   await connectWithRetry();
   
   // Register routes
+  // Setup route must be registered BEFORE setupCheck so the wizard itself is always accessible
+  app.use('/setup', SetupRouter);
+
+  // Redirect to /setup if no admin users exist
+  app.use(setupCheck);
+
   app.use('/', WebRouter);
   app.use('/users', UserRouter);
   app.use('/auth', AuthRouter);

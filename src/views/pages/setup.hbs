@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{title}} - UsersConnect</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      background: linear-gradient(90deg, #007bff, #6610f2);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .setup-container {
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    .setup-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .setup-header h1 {
+      color: #007bff;
+      margin-bottom: 10px;
+    }
+    .setup-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+    }
+    .setup-section h3 {
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .optional-toggle {
+      margin-bottom: 15px;
+    }
+    .warning-box {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .warning-box ul {
+      margin-bottom: 0;
+      padding-left: 20px;
+    }
+    .info-box {
+      background: #d1ecf1;
+      border: 1px solid #17a2b8;
+      border-radius: 6px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+    .info-box ul {
+      margin-bottom: 0;
+      padding-left: 20px;
+    }
+    .optional-fields {
+      margin-top: 15px;
+    }
+    .btn-setup {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="setup-container">
+    <div class="setup-header">
+      <img src="/images/logo.svg" alt="UsersConnect Logo" style="max-width: 200px; margin-bottom: 20px;">
+      <h1>Welcome to UsersConnect</h1>
+      <p class="text-muted">First-Time Setup Wizard</p>
+    </div>
+
+    <form id="setup-form">
+
+      <!-- Step 1: Admin Account -->
+      <div class="setup-section">
+        <h3>Step 1: Create Admin Account</h3>
+        <p class="text-muted small">This will be the primary administrator account.</p>
+
+        <div class="mb-3">
+          <label for="name" class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="email" class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="password" name="password" minlength="6" required>
+          <small class="form-text text-muted">Minimum 6 characters</small>
+        </div>
+      </div>
+
+      <!-- Step 2: S3 Storage -->
+      <div class="setup-section">
+        <h3>Step 2: Configure S3 Storage (Optional)</h3>
+
+        <div class="optional-toggle">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="enableS3" name="enableS3" value="true">
+            <label class="form-check-label" for="enableS3">
+              <strong>Enable S3 for image uploads</strong>
+            </label>
+          </div>
+        </div>
+
+        <div id="s3Fields" class="optional-fields" style="display: none;">
+          <div class="mb-2">
+            <label for="s3Endpoint" class="form-label">Endpoint <small class="text-muted">(optional for AWS S3)</small></label>
+            <input type="text" class="form-control" id="s3Endpoint" name="s3Endpoint" placeholder="https://s3.amazonaws.com">
+          </div>
+          <div class="mb-2">
+            <label for="s3AccessKey" class="form-label">Access Key *</label>
+            <input type="text" class="form-control" id="s3AccessKey" name="s3AccessKey">
+          </div>
+          <div class="mb-2">
+            <label for="s3SecretKey" class="form-label">Secret Key *</label>
+            <input type="password" class="form-control" id="s3SecretKey" name="s3SecretKey">
+          </div>
+          <div class="mb-2">
+            <label for="s3BucketName" class="form-label">Bucket Name *</label>
+            <input type="text" class="form-control" id="s3BucketName" name="s3BucketName">
+          </div>
+          <div class="mb-2">
+            <label for="s3Region" class="form-label">Region (optional)</label>
+            <input type="text" class="form-control" id="s3Region" name="s3Region" placeholder="us-east-1">
+            <small class="form-text text-muted">Leave empty to use default (us-east-1)</small>
+          </div>
+          <div class="mb-2">
+            <label for="s3PublicUrl" class="form-label">Public URL <small class="text-muted">(optional CDN)</small></label>
+            <input type="text" class="form-control" id="s3PublicUrl" name="s3PublicUrl">
+          </div>
+        </div>
+
+        <div id="s3Warning" class="warning-box">
+          <strong>WARNING:</strong> Without S3, users will NOT be able to:
+          <ul>
+            <li>Upload custom profile pictures</li>
+            <li>Upload images in posts</li>
+            <li>Only default Gravatar avatars will be available</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 3: SMTP Email -->
+      <div class="setup-section">
+        <h3>Step 3: Configure SMTP Email (Optional)</h3>
+
+        <div class="optional-toggle">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="enableSMTP" name="enableSMTP" value="true">
+            <label class="form-check-label" for="enableSMTP">
+              <strong>Enable email features</strong>
+            </label>
+          </div>
+        </div>
+
+        <div id="smtpFields" class="optional-fields" style="display: none;">
+          <div class="mb-2">
+            <label for="smtpHost" class="form-label">SMTP Host *</label>
+            <input type="text" class="form-control" id="smtpHost" name="smtpHost" placeholder="smtp.example.com">
+          </div>
+          <div class="mb-2">
+            <label for="smtpPort" class="form-label">SMTP Port</label>
+            <input type="number" class="form-control" id="smtpPort" name="smtpPort" placeholder="465">
+            <small class="form-text text-muted">Common ports: 465 (SSL), 587 (TLS)</small>
+          </div>
+          <div class="mb-2">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="smtpSecure" name="smtpSecure" value="true" checked>
+              <label class="form-check-label" for="smtpSecure">
+                Use SSL/TLS (recommended for port 465)
+              </label>
+            </div>
+          </div>
+          <div class="mb-2">
+            <label for="smtpUser" class="form-label">SMTP Username *</label>
+            <input type="text" class="form-control" id="smtpUser" name="smtpUser">
+          </div>
+          <div class="mb-2">
+            <label for="smtpPassword" class="form-label">SMTP Password *</label>
+            <input type="password" class="form-control" id="smtpPassword" name="smtpPassword">
+          </div>
+          <div class="mb-2">
+            <label for="smtpFromName" class="form-label">From Name</label>
+            <input type="text" class="form-control" id="smtpFromName" name="smtpFromName" value="UsersConnect">
+          </div>
+          <div class="mb-2">
+            <label for="smtpFromEmail" class="form-label">From Email</label>
+            <input type="email" class="form-control" id="smtpFromEmail" name="smtpFromEmail">
+            <small class="form-text text-muted">Leave empty to use SMTP username</small>
+          </div>
+        </div>
+
+        <div id="smtpWarning" class="warning-box">
+          <strong>WARNING:</strong> Without SMTP, these features will be DISABLED:
+          <ul>
+            <li>Email verification (users can post immediately after signup, but they should be forced to verify their email for security.)</li>
+            <li>Password reset (users must contact admin)</li>
+            <li>Email change (users keep registration email)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Step 4: CORS -->
+      <div class="setup-section">
+        <h3>Step 4: Configure CORS (Optional)</h3>
+
+        <div class="optional-toggle">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="enableCORS" name="enableCORS" value="true">
+            <label class="form-check-label" for="enableCORS">
+              <strong>Enable CORS for separate frontend</strong>
+            </label>
+          </div>
+        </div>
+
+        <div id="corsFields" class="optional-fields" style="display: none;">
+          <div class="mb-2">
+            <label for="corsAllowedOrigins" class="form-label">Allowed Origins (comma-separated) *</label>
+            <input type="text" class="form-control" id="corsAllowedOrigins" name="corsAllowedOrigins" placeholder="http://localhost:4200,https://app.example.com">
+            <small class="form-text text-muted">Example: http://localhost:4200,https://app.example.com</small>
+          </div>
+        </div>
+
+        <div id="corsInfo" class="info-box">
+          <strong>NOTE:</strong> CORS is only needed if using a separate frontend application (Angular, React, Vue, etc.)
+          <ul>
+            <li>Server-side rendering (SSR) does not require CORS</li>
+            <li>Skip if you're only using Handlebars templates</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary btn-setup" id="submit-btn">
+          Complete Setup
+        </button>
+      </div>
+
+      <div id="setupMessage" class="mt-3" style="display: none;"></div>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/setup.js"></script>
+</body>
+</html>
