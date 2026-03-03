@@ -127,6 +127,14 @@ export function loadConfig(): AppConfig {
   if (process.env.SMTP_FROM_NAME) merged.smtp.from.name = process.env.SMTP_FROM_NAME;
   if (process.env.SMTP_FROM_EMAIL) merged.smtp.from.email = process.env.SMTP_FROM_EMAIL;
 
+  // cors
+  if (!merged.cors) merged.cors = { enabled: false, allowedOrigins: [], allowCredentials: true, allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization', 'Accept'] };
+  if (process.env.CORS_ENABLED !== undefined) merged.cors.enabled = process.env.CORS_ENABLED === 'true';
+  if (process.env.CORS_ALLOWED_ORIGINS) merged.cors.allowedOrigins = process.env.CORS_ALLOWED_ORIGINS.split(',').map(o => o.trim()).filter(o => o.length > 0);
+  if (process.env.CORS_ALLOW_CREDENTIALS !== undefined) merged.cors.allowCredentials = process.env.CORS_ALLOW_CREDENTIALS === 'true';
+  if (process.env.CORS_ALLOWED_METHODS) merged.cors.allowedMethods = process.env.CORS_ALLOWED_METHODS.split(',').map(m => m.trim()).filter(m => m.length > 0);
+  if (process.env.CORS_ALLOWED_HEADERS) merged.cors.allowedHeaders = process.env.CORS_ALLOWED_HEADERS.split(',').map(h => h.trim()).filter(h => h.length > 0);
+
   // logging
   if (!merged.logging) merged.logging = { level: 'info', directory: '/logs', maxFileSize: 10485760, maxFiles: 5 };
   if (process.env.LOG_LEVEL) merged.logging.level = process.env.LOG_LEVEL as AppConfig['logging']['level'];

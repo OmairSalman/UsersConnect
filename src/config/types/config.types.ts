@@ -105,6 +105,24 @@ export interface AppConfig {
     maxPostImageSizeBytes: number;
   };
 
+  /**
+   * CORS (Cross-Origin Resource Sharing) configuration.
+   * Required when serving API requests from a separate frontend domain.
+   * Disabled by default — safe for SSR-only deployments.
+   */
+  cors: {
+    /** Enable/disable CORS middleware. Set to true only when using a separate frontend. */
+    enabled: boolean;
+    /** Allowed origin URLs (e.g. ['http://localhost:4200', 'https://app.example.com']) */
+    allowedOrigins: string[];
+    /** Allow credentials (cookies) in cross-origin requests */
+    allowCredentials: boolean;
+    /** Allowed HTTP methods */
+    allowedMethods: string[];
+    /** Allowed request headers */
+    allowedHeaders: string[];
+  };
+
   /** Winston logger settings */
   logging: {
     /** Minimum log level to output */

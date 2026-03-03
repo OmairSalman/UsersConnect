@@ -11,7 +11,13 @@ npm start            # Run compiled production build from dist/
 npm test             # Run Jest tests (with coverage)
 npm run test:watch   # Run tests in watch mode
 npm run test:coverage # Generate detailed coverage report
-npm run typeorm      # Run TypeORM CLI commands (e.g., migration:create -- -n Name)
+
+# TypeORM Migrations
+npm run migration:generate -- src/migrations/Name  # Generate migration from entity changes
+npm run migration:create -- src/migrations/Name    # Create empty migration template
+npm run migration:run                              # Apply pending migrations manually
+npm run migration:revert                           # Rollback last migration
+npm run migration:show                             # View migration status
 ```
 
 The dev server watches `src/` and reloads on `.ts`, `.hbs`, `.json`, `.css`, `.js` changes.
@@ -59,6 +65,8 @@ Browser/API Client
 
 **SMTP is optional and feature-gated**: `src/utils/smtpConfig.ts` exports `isSMTPConfigured()` (mirrors S3 pattern, uses `config` object). When SMTP is absent: `isEmailVerified` middleware is bypassed (all users can act freely), password reset/forgot-password routes redirect to `/`, and email-related UI (verification badge, "Verify Email"/"Change Email" buttons, "Forgot password?" link) is hidden via the `smtpEnabled` Handlebars variable. Users can register and use the platform immediately without email verification.
 
+**CORS is disabled by default**: Only enable when a separate frontend (Angular, React, etc.) needs to access the API. When enabled, only origins listed in `config.cors.allowedOrigins` receive `Access-Control-Allow-Origin` headers. Configured via `config.yaml` or env vars (`CORS_ENABLED=true`, `CORS_ALLOWED_ORIGINS=http://localhost:4200,...`).
+
 **JWT auth with refresh tokens**: Access tokens (15 min) and refresh tokens are stored as HTTP-only cookies. `isAuthenticated` middleware silently refreshes the access token using the refresh token when it expires.
 
 **Password reset / email verification flow via Redis**: Temporary codes and session tokens are stored in Redis with short TTLs (password-reset: 10 min, reset-session: 5 min, email-verification: 10 min, email-change: 10 min).
@@ -82,18 +90,36 @@ config.redis.ttl.default                 // number (seconds)
 
 **For deployers:** Copy `config.example.yaml` to `config.yaml` and customize. Use environment variables for secrets (JWT secrets, DB password, S3 keys).
 
-**Note:** `src/config/dataSource.ts`, `src/services/emailService.ts`, and `src/services/s3Service.ts` still read `process.env` directly — YAML configuration for those services requires additional migration.
+**Note:** `src/services/emailService.ts` and `src/services/s3Service.ts` still read `process.env` directly — YAML configuration for those services requires additional migration.
+
+### Database Migrations
+
+**Development (`NODE_ENV=development`):** `synchronize: true` — TypeORM auto-syncs entity changes to the database. Migrations are not run.
+
+**Production/test:** `synchronize: false`, `migrationsRun: true` — Migrations run automatically on startup. Schema never changes without an explicit migration.
+
+**Migration workflow:**
+1. Make entity changes
+2. Generate migration: `npm run migration:generate -- src/migrations/DescriptiveName`
+3. Review the generated `up()` / `down()` SQL in `src/migrations/`
+4. Commit the migration file to git
+5. Deploy — migrations apply automatically when the app starts
+
+Migration files live in `src/migrations/` (TypeScript, committed to git). The build compiles them to `dist/migrations/` (JavaScript, excluded from git via `dist/` in `.gitignore`).
+
+**Important:** Always review generated migrations before committing — TypeORM may not detect all edge cases (e.g. column renames vs drop+add). Test in staging before production.
 
 ### Source Layout
 
 ```
 src/
 ├── config/
-│   ├── dataSource.ts       # TypeORM DataSource (MySQL)
+│   ├── dataSource.ts       # TypeORM DataSource (MySQL) — uses config object
 │   ├── redis.ts            # ioredis client singleton
 │   ├── logger.ts           # Winston logger
 │   ├── environment.d.ts    # process.env type declarations
 │   └── express.d.ts        # Express Request augmentation (req.user: UserPayload)
+├── migrations/             # TypeORM migration files (committed to git)
 ├── entities/               # TypeORM entities (User, Post, Comment) — extend BaseEntity
 ├── services/               # Business logic; call entities and Redis directly
 ├── controllers/
@@ -127,11 +153,19 @@ Never expose raw TypeORM entities in responses. Always map through `publicDTOs.t
 
 ### Environment Variables
 
-Required: `NODE_ENV`, `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `DATABASE_HOST`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_NAME`, `REDIS_HOST`, `REDIS_PASSWORD`
+All configuration can be set via environment variables or `config.yaml`. Environment variables always take priority. See `.env.example` for a complete list with descriptions.
+
+Required: `NODE_ENV`, `ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`, `DATABASE_HOST`, `DATABASE_USERNAME`, `DATABASE_PASSWORD`, `DATABASE_NAME`, `REDIS_HOST`
+
+Optional (Redis): `REDIS_PASSWORD`
 
 Optional (S3): `S3_ACCESS_KEY`, `S3_SECRET_KEY`, `S3_BUCKET_NAME`, `S3_REGION`, `S3_ENDPOINT`, `S3_PUBLIC_URL`
 
 Optional (Email): `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM_NAME`, `SMTP_FROM_EMAIL`
+
+Optional (CORS): `CORS_ENABLED`, `CORS_ALLOWED_ORIGINS`, `CORS_ALLOW_CREDENTIALS`, `CORS_ALLOWED_METHODS`, `CORS_ALLOWED_HEADERS`
+
+Optional (Other): `GRAVATAR_API_KEY`, `LOG_LEVEL`
 
 ### Coding Conventions
 

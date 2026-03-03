@@ -13,7 +13,12 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "typeorm": "typeorm-ts-node-commonjs"
+    "typeorm": "typeorm-ts-node-commonjs",
+    "migration:generate": "npm run typeorm -- migration:generate -d src/config/dataSource.ts",
+    "migration:create": "npm run typeorm -- migration:create",
+    "migration:run": "npm run typeorm -- migration:run -d src/config/dataSource.ts",
+    "migration:revert": "npm run typeorm -- migration:revert -d src/config/dataSource.ts",
+    "migration:show": "npm run typeorm -- migration:show -d src/config/dataSource.ts"
   },
   "author": "Omair Salman",
   "license": "MIT",

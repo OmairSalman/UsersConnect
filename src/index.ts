@@ -27,20 +27,32 @@ const app = express();
 // ============================================
 // CORS CONFIGURATION
 // ============================================
-app.use((req, res, next) => {
-  // Allow requests from Angular dev server
-  res.header('Access-Control-Allow-Origin', 'http://192.168.1.3:4200');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  next();
-});
+if (config.cors.enabled) {
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+
+    if (origin && config.cors.allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    }
+
+    res.header('Access-Control-Allow-Methods', config.cors.allowedMethods.join(', '));
+    res.header('Access-Control-Allow-Headers', config.cors.allowedHeaders.join(', '));
+
+    if (config.cors.allowCredentials) {
+      res.header('Access-Control-Allow-Credentials', 'true');
+    }
+
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+
+    next();
+  });
+
+  logger.info(`✅ CORS enabled for origins: ${config.cors.allowedOrigins.join(', ')}`);
+} else {
+  logger.info('ℹ️  CORS disabled');
+}
 
 app.engine('hbs', engine({
   extname: '.hbs',
@@ -54,7 +66,7 @@ app.set('view engine', 'hbs');
 app.set('views', path.join(__dirname, 'views'));
 
 // Disable view caching in development
-if (process.env.NODE_ENV !== 'production') {
+if (config.app.nodeEnv !== 'production') {
   app.disable('view cache');
 }
 

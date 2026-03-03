@@ -52,6 +52,14 @@ const defaultConfig: Partial<AppConfig> = {
     maxPostImageSizeBytes: 10 * 1024 * 1024,         // 10 MB
   },
 
+  cors: {
+    enabled: false,
+    allowedOrigins: [],
+    allowCredentials: true,
+    allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  },
+
   logging: {
     level: 'info',
     directory: '/logs',
