@@ -7,7 +7,7 @@ Initially built during summer field training at [AsalTech](https://asaltech.com/
 **Live Demo:** [https://usersconnect.cloudomair.org/](https://usersconnect.cloudomair.org/)  
 **Docker Hub:** [omairsalman/usersconnect](https://hub.docker.com/r/omairsalman/usersconnect)
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/OmairSalman/UsersConnect/releases)
+[![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)](https://github.com/OmairSalman/UsersConnect/releases)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/omairsalman/usersconnect)](https://hub.docker.com/r/omairsalman/usersconnect)
 [![Docker Image Size](https://img.shields.io/docker/image-size/omairsalman/usersconnect/latest?label=image%20size)](https://hub.docker.com/r/omairsalman/usersconnect)
@@ -206,7 +206,7 @@ UsersConnect uses a flexible configuration system with three layers:
 - Set all variables in `.env` or via Docker environment
 - Takes highest priority
 
-**Option 2: YAML Configuration File** (new in v1.0.0)
+**Option 2: YAML Configuration File** (new in v1.0.2)
 - Create `config.yaml` in the root directory
 - See `config.example.yaml` for all available options
 - Easier for managing multiple settings
