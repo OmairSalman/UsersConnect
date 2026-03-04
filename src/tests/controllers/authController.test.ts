@@ -47,7 +47,9 @@ describe('AuthController', () => {
         name: 'John',
         email: 'john@example.com',
         avatarURL: 'avatar.jpg',
-        isAdmin: false
+        isAdmin: false,
+        isEmailVerified: false,
+        isEmailPublic: false
       };
 
       mockRequest.body = { email: 'john@example.com', password: 'password123' };
