@@ -10,6 +10,7 @@ import { isS3Configured } from "../../utils/s3Config";
 import { isSMTPConfigured } from "../../utils/smtpConfig";
 import { asString } from "../../utils/asString";
 import redisClient from "../../config/redis";
+import { config } from '../../config';
 
 const postService = new PostService();
 const commentService = new CommentService();
@@ -260,7 +261,7 @@ async function getUserFromToken(request: Request, response: Response)
 
     try
     {
-        const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET!) as UserPayload;
+        const decoded = jwt.verify(accessToken, config.jwt.accessTokenSecret) as UserPayload;
         return decoded;
     }
     catch (error)
@@ -271,7 +272,7 @@ async function getUserFromToken(request: Request, response: Response)
 
     try
     {
-        const decodedRefresh = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as RefreshPayload;
+        const decodedRefresh = jwt.verify(refreshToken, config.jwt.refreshTokenSecret) as RefreshPayload;
         
         const user = await userService.getUserById(decodedRefresh._id);
 
@@ -287,12 +288,12 @@ async function getUserFromToken(request: Request, response: Response)
             isAdmin: user.isAdmin
         };
 
-        const newAccessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
+        const newAccessToken = jwt.sign(payload, config.jwt.accessTokenSecret, { expiresIn: '15m' });
         
         response.cookie("accessToken", newAccessToken,
         {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: config.app.nodeEnv === "production",
             sameSite: "lax",
             maxAge: 1000 * 60 * 15
         });

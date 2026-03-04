@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import logger from "../../config/logger";
 import { RefreshPayload, UserPayload } from "../../config/express";
 import { Post } from "../../entities/postEntity";
+import { config } from '../../config';
 
 const userService = new UserService();
 const postService = new PostService();
@@ -94,14 +95,14 @@ export default class UserController
             {
                 response.clearCookie("accessToken", {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     path: "/",
                 });
 
                 response.clearCookie("refreshToken", {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     path: "/",
                 });
@@ -120,19 +121,19 @@ export default class UserController
                     _id: user._id
                 };
 
-                const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
-                const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+                const accessToken = jwt.sign(accessPayload, config.jwt.accessTokenSecret, { expiresIn: '15m' });
+                const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshTokenSecret, { expiresIn: '30d' });
 
                 response.cookie("accessToken", accessToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     maxAge: 1000 * 60 * 15
                 });
 
                 response.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });
@@ -210,14 +211,14 @@ export default class UserController
             {
                 response.clearCookie("accessToken", {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     path: "/",
                 });
 
                 response.clearCookie("refreshToken", {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     path: "/",
                 });
@@ -236,19 +237,19 @@ export default class UserController
                     _id: updatedUser._id
                 };
 
-                const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
-                const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+                const accessToken = jwt.sign(accessPayload, config.jwt.accessTokenSecret, { expiresIn: '15m' });
+                const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshTokenSecret, { expiresIn: '30d' });
 
                 response.cookie("accessToken", accessToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     maxAge: 1000 * 60 * 15
                 });
 
                 response.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });
@@ -286,14 +287,14 @@ export default class UserController
             {
                 response.clearCookie("accessToken", {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     path: "/",
                 });
 
                 response.clearCookie("refreshToken", {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     path: "/",
                 });
@@ -312,19 +313,19 @@ export default class UserController
                     _id: updatedUser._id
                 };
 
-                const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
-                const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+                const accessToken = jwt.sign(accessPayload, config.jwt.accessTokenSecret, { expiresIn: '15m' });
+                const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshTokenSecret, { expiresIn: '30d' });
 
                 response.cookie("accessToken", accessToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     maxAge: 1000 * 60 * 15
                 });
 
                 response.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === "production",
+                    secure: config.app.nodeEnv === "production",
                     sameSite: "lax",
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });

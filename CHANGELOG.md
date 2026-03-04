@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 04-03-2026
+
+### Fixed
+- **Critical: YAML configuration not applied** - Fixed hardcoded `process.env` calls throughout codebase that bypassed the centralized configuration system
+- **S3Service** - Now properly uses `config.s3.*` instead of `process.env.S3_*`
+- **EmailService** - Now properly uses `config.smtp.*` instead of `process.env.SMTP_*`
+- **Logger** - Now properly uses `config.logging.level` instead of `process.env.LOG_LEVEL`
+- **s3Config utility** - Now checks `config.s3` instead of `process.env` for feature detection
+
+**Impact:** YAML-based configuration (`config.yaml`) now works correctly. Previously, even though config.yaml was loaded, services bypassed it by reading environment variables directly, causing YAML settings to be ignored.
+
 ## [1.0.0] - 04-03-2026
 
 ### Added

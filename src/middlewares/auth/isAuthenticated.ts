@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserPayload, RefreshPayload } from '../../config/express';
 import UserService from '../../services/userService';
+import { config } from '../../config';
 
 const userService = new UserService();
 
@@ -26,7 +27,7 @@ export async function isAuthenticated(request: Request, response: Response, next
 
   try
   {
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET!) as UserPayload;
+    const decoded = jwt.verify(accessToken, config.jwt.accessTokenSecret) as UserPayload;
     request.user = decoded;
     return next();
   }
@@ -45,7 +46,7 @@ export async function isAuthenticated(request: Request, response: Response, next
 
   try
   {
-    const decodedRefresh = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!) as RefreshPayload;
+    const decodedRefresh = jwt.verify(refreshToken, config.jwt.refreshTokenSecret) as RefreshPayload;
 
     const user = await userService.getUserById(decodedRefresh._id);
 
@@ -61,11 +62,11 @@ export async function isAuthenticated(request: Request, response: Response, next
       isAdmin: user.isAdmin
     };
 
-    const newAccessToken = jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
+    const newAccessToken = jwt.sign(payload, config.jwt.accessTokenSecret, { expiresIn: '15m' });
 
     response.cookie("accessToken", newAccessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: config.app.nodeEnv === "production",
       sameSite: "lax",
       maxAge: 1000 * 60 * 15
     });

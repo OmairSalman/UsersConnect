@@ -3,6 +3,7 @@ import AuthService from "../../services/authService";
 import jwt from 'jsonwebtoken';
 import { User } from "../../entities/userEntity";
 import { RefreshPayload, UserPayload } from "../../config/express";
+import { config } from '../../config';
 
 const authService = new AuthService();
 
@@ -43,19 +44,19 @@ export default class AuthController
                 _id: user._id
             };
             
-            const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
-            const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+            const accessToken = jwt.sign(accessPayload, config.jwt.accessTokenSecret, { expiresIn: '15m' });
+            const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshTokenSecret, { expiresIn: '30d' });
 
             response.cookie("accessToken", accessToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
+                secure: config.app.nodeEnv === "production",
                 sameSite: "lax",
                 maxAge: 1000 * 60 * 15
             });
 
             response.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
+                secure: config.app.nodeEnv === "production",
                 sameSite: "lax",
                 maxAge: 1000 * 60 * 60 * 24 * 30
             });
@@ -124,19 +125,19 @@ export default class AuthController
             _id: newUser._id
         };
 
-        const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
-        const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+        const accessToken = jwt.sign(accessPayload, config.jwt.accessTokenSecret, { expiresIn: '15m' });
+        const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshTokenSecret, { expiresIn: '30d' });
 
         response.cookie("accessToken", accessToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: config.app.nodeEnv === "production",
             sameSite: "lax",
             maxAge: 1000 * 60 * 15
         });
 
         response.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: config.app.nodeEnv === "production",
             sameSite: "lax",
             maxAge: 1000 * 60 * 60 * 24 * 30
         });
@@ -152,14 +153,14 @@ export default class AuthController
     {
         response.clearCookie("accessToken", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: config.app.nodeEnv === "production",
             sameSite: "lax",
             path: "/",
         });
 
         response.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
+            secure: config.app.nodeEnv === "production",
             sameSite: "lax",
             path: "/",
         });
@@ -198,7 +199,7 @@ export default class AuthController
         {
             response.cookie('resetEmail', email, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: config.app.nodeEnv === "production",
                 sameSite: 'lax',
                 maxAge: 10 * 60 * 1000 // 10 minutes
             });
@@ -245,7 +246,7 @@ export default class AuthController
             // Set session cookie
             response.cookie('resetSessionToken', sessionToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: config.app.nodeEnv === "production",
                 sameSite: 'lax',
                 maxAge: 5 * 60 * 1000 // 5 minutes
             });
@@ -339,14 +340,14 @@ export default class AuthController
             // Clear session cookie
             response.clearCookie('resetSessionToken', {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: config.app.nodeEnv === "production",
                 sameSite: 'lax',
                 path: '/'
             });
 
             response.clearCookie('resetEmail', {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: config.app.nodeEnv === "production",
                 sameSite: 'lax',
                 path: '/'
             });
@@ -427,14 +428,14 @@ export default class AuthController
             if (user) {
                 response.clearCookie('accessToken', {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: config.app.nodeEnv === "production",
                     sameSite: 'lax',
                     path: '/'
                 });
                 
                 response.clearCookie('refreshToken', {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: config.app.nodeEnv === "production",
                     sameSite: 'lax',
                     path: '/'
                 });
@@ -453,19 +454,19 @@ export default class AuthController
                     _id: user._id
                 };
                 
-                const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
-                const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+                const accessToken = jwt.sign(accessPayload, config.jwt.accessTokenSecret, { expiresIn: '15m' });
+                const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshTokenSecret, { expiresIn: '30d' });
                 
                 response.cookie('accessToken', accessToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: config.app.nodeEnv === "production",
                     sameSite: 'lax',
                     maxAge: 1000 * 60 * 15
                 });
                 
                 response.cookie('refreshToken', refreshToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: config.app.nodeEnv === "production",
                     sameSite: 'lax',
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });
@@ -517,7 +518,7 @@ export default class AuthController
             // Set HttpOnly cookie with temp token
             response.cookie('emailChangeSession', result.tempToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: config.app.nodeEnv === "production",
                 sameSite: 'lax',
                 maxAge: 1000 * 60 * 5 // 5 minutes
             });
@@ -586,7 +587,7 @@ export default class AuthController
             // Clear the temp session cookie
             response.clearCookie('emailChangeSession', {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
+                secure: config.app.nodeEnv === "production",
                 sameSite: 'lax',
                 path: '/'
             });
@@ -597,14 +598,14 @@ export default class AuthController
             {
                 response.clearCookie('accessToken', {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: config.app.nodeEnv === "production",
                     sameSite: 'lax',
                     path: '/'
                 });
                 
                 response.clearCookie('refreshToken', {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: config.app.nodeEnv === "production",
                     sameSite: 'lax',
                     path: '/'
                 });
@@ -623,19 +624,19 @@ export default class AuthController
                     _id: user._id
                 };
                 
-                const accessToken = jwt.sign(accessPayload, process.env.ACCESS_TOKEN_SECRET!, { expiresIn: '15m' });
-                const refreshToken = jwt.sign(refreshPayload, process.env.REFRESH_TOKEN_SECRET!, { expiresIn: '30d' });
+                const accessToken = jwt.sign(accessPayload, config.jwt.accessTokenSecret, { expiresIn: '15m' });
+                const refreshToken = jwt.sign(refreshPayload, config.jwt.refreshTokenSecret, { expiresIn: '30d' });
                 
                 response.cookie('accessToken', accessToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: config.app.nodeEnv === "production",
                     sameSite: 'lax',
                     maxAge: 1000 * 60 * 15
                 });
                 
                 response.cookie('refreshToken', refreshToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
+                    secure: config.app.nodeEnv === "production",
                     sameSite: 'lax',
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });

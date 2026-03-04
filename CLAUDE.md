@@ -92,7 +92,7 @@ config.redis.ttl.default                 // number (seconds)
 
 **For deployers:** Copy `config.example.yaml` to `config.yaml` and customize. Use environment variables for secrets (JWT secrets, DB password, S3 keys).
 
-**Note:** `src/services/emailService.ts` and `src/services/s3Service.ts` still read `process.env` directly — YAML configuration for those services requires additional migration.
+All services and controllers use the `config` object — YAML-based configuration works throughout the entire codebase.
 
 ### Database Migrations
 

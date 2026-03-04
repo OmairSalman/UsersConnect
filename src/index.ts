@@ -83,7 +83,7 @@ async function connectWithRetry(retries = 10, delay = 5000): Promise<void> {
   for (let i = 0; i < retries; i++) {
     try {
       await AppDataSource.initialize();
-      logger.info(`✅ Data Source initialized! Connected to MySQL DB: ${process.env.DATABASE_NAME}`);
+      logger.info(`✅ Data Source initialized! Connected to MySQL DB: ${config.database.name}`);
       return;
     } catch (error) {
       const remainingRetries = retries - i - 1;

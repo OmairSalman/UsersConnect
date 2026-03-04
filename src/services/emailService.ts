@@ -4,6 +4,7 @@ import handlebars from 'handlebars';
 import fs from 'fs';
 import path from 'path';
 import logger from '../config/logger';
+import { config } from '../config';
 
 export class EmailService {
   private transporter: nodemailer.Transporter;
@@ -12,12 +13,12 @@ export class EmailService {
   constructor() {
     // Create SMTP transporter with proper typing
     const transportOptions: SMTPTransport.Options = {
-      host: process.env.SMTP_HOST,
-      port: parseInt(process.env.SMTP_PORT || '465'),
-      secure: process.env.SMTP_SECURE === 'true',
+      host: config.smtp.host,
+      port: config.smtp.port ?? 465,
+      secure: config.smtp.secure ?? false,
       auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
+        user: config.smtp.user,
+        pass: config.smtp.password,
       },
     };
 
@@ -70,7 +71,7 @@ export class EmailService {
       const html = this.renderTemplate('passwordReset', { name, resetCode });
 
       const mailOptions = {
-        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+        from: `"${config.smtp.from.name}" <${config.smtp.from.email ?? config.smtp.user}>`,
         to: to,
         subject: `Password Reset Code: ${resetCode} - UsersConnect`,
         html: html,
@@ -100,7 +101,7 @@ export class EmailService {
       const html = this.renderTemplate('emailVerification', { name, verificationCode });
 
       const mailOptions = {
-        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+        from: `"${config.smtp.from.name}" <${config.smtp.from.email ?? config.smtp.user}>`,
         to: to,
         subject: `Verification Code: ${verificationCode} - UsersConnect`,
         html: html,
@@ -127,7 +128,7 @@ export class EmailService {
       const html = this.renderTemplate('emailChangeVerifyCurrent', { name, verificationCode });
 
       const mailOptions = {
-        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+        from: `"${config.smtp.from.name}" <${config.smtp.from.email ?? config.smtp.user}>`,
         to: to,
         subject: `Email Change Request: ${verificationCode} - UsersConnect`,
         html: html,
@@ -154,7 +155,7 @@ export class EmailService {
       const html = this.renderTemplate('emailChangeVerifyNew', { name, verificationCode });
 
       const mailOptions = {
-        from: `"${process.env.SMTP_FROM_NAME}" <${process.env.SMTP_FROM_EMAIL}>`,
+        from: `"${config.smtp.from.name}" <${config.smtp.from.email ?? config.smtp.user}>`,
         to: to,
         subject: `Verify Your New Email: ${verificationCode} - UsersConnect`,
         html: html,
@@ -173,10 +174,6 @@ export class EmailService {
    * Check if SMTP is configured
    */
   isConfigured(): boolean {
-    return !!(
-      process.env.SMTP_HOST &&
-      process.env.SMTP_USER &&
-      process.env.SMTP_PASSWORD
-    );
+    return !!(config.smtp.host && config.smtp.user && config.smtp.password);
   }
 }

@@ -36,7 +36,6 @@ const consoleFormat = winston.format.combine(
 
 // Create logger instance
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
   transports: [
     // Console output (colored)
     new winston.transports.Console({

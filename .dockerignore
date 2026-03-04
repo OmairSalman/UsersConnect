@@ -1,4 +1,11 @@
 # ======================
+# Git
+# ======================
+.git/
+.gitignore
+.gitkeep
+
+# ======================
 # Node.js / npm / Yarn
 # ======================
 node_modules/
@@ -16,16 +23,18 @@ yarn-error.log*
 pnpm-debug.log*
 
 # ======================
-# TypeScript
+# TypeScript Source & Build
 # ======================
-build/
+src/
 *.tsbuildinfo
 
 # ======================
 # Testing and Coverage
 # ======================
+tests/
 coverage/
 *.lcov
+jest.config.ts
 
 # ======================
 # Environment Variables
@@ -33,6 +42,30 @@ coverage/
 .env
 .env.*
 !.env.example
+
+# ======================
+# Configuration Files
+# ======================
+config.yaml
+!config.example.yaml
+tsconfig.json
+nodemon.json
+
+# ======================
+# Documentation
+# ======================
+README.md
+CHANGELOG.md
+CONTRIBUTING.md
+CLAUDE.md
+
+# ======================
+# Docker Files
+# ======================
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose-s3.yml
 
 # ======================
 # IDEs and Editors
@@ -49,13 +82,13 @@ coverage/
 Thumbs.db
 
 # ======================
-# Optional: Lint/Prettier Cache
+# Lint/Prettier Cache
 # ======================
 .eslintcache
 .prettiercache
 
 # ======================
-# Optional: Temporary Files
+# Temporary Files
 # ======================
 tmp/
 temp/
@@ -64,17 +97,9 @@ temp/
 *.swo
 
 # ======================
-# Optional: Lock files
+# Lock files (Optional)
 # ======================
 # Uncomment if your team does NOT commit lock files
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
-
-src/
-
-.gitignore
-jest.config.ts
-tsconfig.json
-nodemon.json
-README.md

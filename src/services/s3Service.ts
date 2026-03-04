@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import logger from '../config/logger';
+import { config } from '../config';
 
 export class S3Service
 {
@@ -10,14 +11,15 @@ export class S3Service
 
   constructor()
   {
-    const endpoint = process.env.S3_ENDPOINT;
-    const region = process.env.S3_REGION || "us-east-1";
+    const s3Config = config.s3;
+    const endpoint = s3Config.endpoint;
+    const region = s3Config.region || 'us-east-1';
 
     this.s3Client = new S3Client({
       region: region,
       credentials: {
-        accessKeyId: process.env.S3_ACCESS_KEY!,
-        secretAccessKey: process.env.S3_SECRET_KEY!,
+        accessKeyId: s3Config.accessKey!,
+        secretAccessKey: s3Config.secretKey!,
       },
       ...(endpoint && {
         endpoint: endpoint,
@@ -25,9 +27,9 @@ export class S3Service
       }),
     });
 
-    this.bucketName = process.env.S3_BUCKET_NAME!;
+    this.bucketName = s3Config.bucketName!;
 
-    this.publicUrl = process.env.S3_PUBLIC_URL ||
+    this.publicUrl = s3Config.publicUrl ||
       (endpoint
         ? `${endpoint}/${this.bucketName}`
         : `https://${this.bucketName}.s3.${region}.amazonaws.com`);
