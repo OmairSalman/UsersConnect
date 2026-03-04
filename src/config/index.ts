@@ -1,5 +1,6 @@
 import { loadConfig } from './config.loader';
 import logger from './logger';
+import 'dotenv/config';
 
 /**
  * Singleton application configuration.

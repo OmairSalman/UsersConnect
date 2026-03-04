@@ -1,7 +1,15 @@
 import winston from 'winston';
 import path from 'path';
+import fs from 'fs';
 
-const logDir = process.env.NODE_ENV === 'production' ? '/logs' : './logs';
+// Always use logs directory relative to project root
+// Works in both development and production (Docker)
+const logDir = path.join(process.cwd(), 'logs');
+
+// Create logs directory if it doesn't exist
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir, { recursive: true });
+}
 
 // Define log format for files (no color)
 const fileFormat = winston.format.combine(
@@ -51,11 +59,5 @@ const logger = winston.createLogger({
     })
   ]
 });
-
-// Create logs directory if it doesn't exist
-import fs from 'fs';
-if (!fs.existsSync(logDir)) {
-  fs.mkdirSync(logDir, { recursive: true });
-}
 
 export default logger;

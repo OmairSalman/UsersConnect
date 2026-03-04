@@ -2,7 +2,7 @@
 
 A modern full-stack social media platform built with Node.js, Express, and TypeScript. Create posts with optional images, comment, like/dislike, and connect with users in a responsive interface.
 
-Built during field training at [AsalTech](https://asaltech.com/) under professional mentorship.
+Initially built during summer field training at [AsalTech](https://asaltech.com/) under professional mentorship, with continued development thereafter.
 
 **Live Demo:** [https://usersconnect.cloudomair.org/](https://usersconnect.cloudomair.org/)  
 **Docker Hub:** [omairsalman/usersconnect](https://hub.docker.com/r/omairsalman/usersconnect)
@@ -535,50 +535,153 @@ When you first deploy UsersConnect, you'll be automatically redirected to the **
 ```
 usersconnect/
 ├── src/
-│   ├── config/              # Configuration (DB, Redis, YAML loader)
-│   │   ├── types/           # TypeScript config interfaces
-│   │   ├── dataSource.ts    # TypeORM configuration
-│   │   ├── redis.ts         # Redis client
-│   │   ├── config.loader.ts # YAML config loader
-│   │   └── index.ts         # Config singleton
-│   ├── controllers/         # Request handlers
-│   │   ├── api/            # REST API endpoints
-│   │   └── web/            # Page rendering + setup wizard
-│   ├── middlewares/         # Express middlewares
-│   │   ├── auth/           # Authentication checks
-│   │   ├── validation/     # Input validation
-│   │   └── setupCheck.ts   # First-time setup redirect
-│   ├── entities/            # TypeORM entities
-│   ├── migrations/          # Database migrations
-│   ├── services/            # Business logic
+│   ├── config/                      # Configuration files
+│   │   ├── types/
+│   │   │   └── config.types.ts      # Config interfaces
+│   │   ├── config.loader.ts         # YAML + env loader
+│   │   ├── dataSource.ts            # TypeORM data source
+│   │   ├── default.config.ts        # Default config values
+│   │   ├── environment.d.ts         # Env var type definitions
+│   │   ├── express.d.ts             # Express type extensions
+│   │   ├── index.ts                 # Config singleton
+│   │   ├── logger.ts                # Winston logger setup
+│   │   └── redis.ts                 # Redis client
+│   ├── controllers/                 # Request handlers
+│   │   ├── api/
+│   │   │   ├── authController.ts
+│   │   │   ├── commentController.ts
+│   │   │   ├── configController.ts
+│   │   │   ├── emailTestController.ts
+│   │   │   ├── postController.ts
+│   │   │   └── userController.ts
+│   │   └── web/
+│   │       ├── setupController.ts   # Setup wizard
+│   │       └── webController.ts     # Page rendering
+│   ├── entities/                    # TypeORM entities
+│   │   ├── commentEntity.ts
+│   │   ├── postEntity.ts
+│   │   └── userEntity.ts
+│   ├── middlewares/
+│   │   ├── auth/
+│   │   │   ├── isAdmin.ts
+│   │   │   ├── isAuthenticated.ts
+│   │   │   ├── isCommentAuthor.ts
+│   │   │   ├── isEmailVerified.ts
+│   │   │   └── isPostAuthor.ts
+│   │   ├── validation/
+│   │   │   ├── commentValidation.ts
+│   │   │   ├── postValidation.ts
+│   │   │   └── userValidation.ts
+│   │   └── setupCheck.ts            # Setup wizard redirect
+│   ├── migrations/                  # Database migrations
+│   │   ├── .gitkeep
+│   │   └── [timestamp]-InitialSchema.ts
+│   ├── routers/
+│   │   ├── api/
+│   │   │   ├── authRouter.ts
+│   │   │   ├── commentRouter.ts
+│   │   │   ├── configRouter.ts
+│   │   │   ├── emailTestRouter.ts
+│   │   │   ├── postRouter.ts
+│   │   │   └── userRouter.ts
+│   │   └── web/
+│   │       ├── setupRouter.ts       # Setup routes
+│   │       └── webRouter.ts         # Page routes
+│   ├── services/                    # Business logic
 │   │   ├── authService.ts
-│   │   ├── postService.ts
 │   │   ├── commentService.ts
-│   │   ├── userService.ts
-│   │   ├── s3Service.ts    # S3 upload handling (optional)
-│   │   └── emailService.ts # SMTP email (optional)
-│   ├── routers/             # Route definitions
-│   ├── utils/               # Helper functions and DTOs
-│   │   ├── s3Config.ts     # S3 configuration checker
-│   │   ├── smtpConfig.ts   # SMTP configuration checker
-│   │   └── cacheInvalidation.ts  # Redis cache helpers
-│   ├── views/               # Handlebars templates
-│   │   ├── layouts/
-│   │   ├── pages/
-│   │   └── partials/
-│   ├── public/              # Static assets
+│   │   ├── emailService.ts          # SMTP email (optional)
+│   │   ├── postService.ts
+│   │   ├── s3Service.ts             # S3 uploads (optional)
+│   │   └── userService.ts
+│   ├── utils/                       # Helper utilities
+│   │   ├── asString.ts              # Type conversion helpers
+│   │   ├── publicDTOs.ts            # Data transfer objects
+│   │   ├── publicTypes.ts           # Shared type definitions
+│   │   ├── s3Config.ts              # S3 feature detection
+│   │   └── smtpConfig.ts            # SMTP feature detection
+│   ├── public/                      # Static assets
 │   │   ├── css/
-│   │   ├── js/
-│   │   └── images/
-│   └── tests/               # Jest tests
-├── dist/                    # Compiled JavaScript
-├── config.yaml              # Optional YAML configuration
-├── config.example.yaml      # Configuration template
-├── .env.example             # Environment variables template
+│   │   │   └── style.css
+│   │   ├── images/
+│   │   │   ├── home-hero.svg
+│   │   │   ├── logo-icon-white.svg
+│   │   │   ├── logo-icon.svg
+│   │   │   └── logo.svg
+│   │   └── js/                      # Client-side scripts
+│   │       ├── admin-edit-user.js
+│   │       ├── admin-users.js
+│   │       ├── create-post.js
+│   │       ├── edit-profile.js
+│   │       ├── feed.js
+│   │       ├── forgot-password.js
+│   │       ├── login.js
+│   │       ├── register.js
+│   │       ├── reset-password-confirm.js
+│   │       ├── setup.js
+│   │       ├── verify-email.js
+│   │       └── verify-reset-code.js
+│   ├── views/                       # Handlebars templates
+│   │   ├── emails/                  # Email templates
+│   │   │   ├── emailChangeVerifyCurrent.hbs
+│   │   │   ├── emailChangeVerifyNew.hbs
+│   │   │   ├── emailVerification.hbs
+│   │   │   ├── layout.hbs
+│   │   │   └── passwordReset.hbs
+│   │   ├── helpers/
+│   │   │   └── hbsHelpers.ts        # Handlebars helpers
+│   │   ├── layouts/
+│   │   │   └── main.hbs             # Main layout
+│   │   ├── pages/
+│   │   │   ├── about.hbs
+│   │   │   ├── adminEditUser.hbs
+│   │   │   ├── contact.hbs
+│   │   │   ├── editProfile.hbs
+│   │   │   ├── feed.hbs
+│   │   │   ├── forgotPassword.hbs
+│   │   │   ├── home.hbs
+│   │   │   ├── login.hbs
+│   │   │   ├── privacy.hbs
+│   │   │   ├── profile.hbs
+│   │   │   ├── register.hbs
+│   │   │   ├── resetPassword.hbs
+│   │   │   ├── resetPasswordConfirm.hbs
+│   │   │   ├── setup.hbs
+│   │   │   ├── terms.hbs
+│   │   │   └── users.hbs
+│   │   ├── partials/
+│   │   │   ├── commentCard.hbs
+│   │   │   ├── dislikePopup.hbs
+│   │   │   ├── footer.hbs
+│   │   │   ├── likePopup.hbs
+│   │   │   ├── navbar.hbs
+│   │   │   └── postCard.hbs
+│   │   └── index.ts                 # View engine setup
+│   └── tests/                       # Jest unit tests
+│       ├── controllers/
+│       │   └── authController.test.ts
+│       ├── middlewares/
+│       │   └── auth.test.ts
+│       └── services/
+│           ├── authService.test.ts
+│           └── userToPublic.test.ts
+├── dist/                            # Compiled JavaScript
+├── logs/                            # Application logs
+├── .dockerignore
+├── .env.example                     # Environment template
+├── .gitignore
+├── CLAUDE.md                        # Architecture documentation
+├── CONTRIBUTING.md                  # Contributing guidelines
+├── config.example.yaml              # Configuration template
+├── docker-compose-s3.yml            # Docker with MinIO
+├── docker-compose.yml               # Docker Compose setup
 ├── Dockerfile
-├── docker-compose.yml
+├── jest.config.ts                   # Jest configuration
+├── LICENSE                          # MIT License
+├── nodemon.json                     # Nodemon config
 ├── package.json
-└── tsconfig.json
+├── README.md                        # This file
+└── tsconfig.json                    # TypeScript config
 ```
 
 ---
@@ -829,8 +932,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built during summer field training at **[AsalTech](https://asaltech.com/)**
-- Special thanks to my backend development mentor for guidance
+- Initially developed during summer field training at **[AsalTech](https://asaltech.com/)**
+- Special thanks to my backend development mentor for guidance during training
 - Bootstrap team for the CSS framework
 - TypeORM team for the robust ORM
 - All open-source contributors
