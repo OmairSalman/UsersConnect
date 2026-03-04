@@ -1,12 +1,13 @@
 # UsersConnect 🌐
 
-A modern full-stack social media platform built with Node.js, Express, and TypeScript. Create posts with optional images, comment, like, and connect with users in a responsive interface.
+A modern full-stack social media platform built with Node.js, Express, and TypeScript. Create posts with optional images, comment, like/dislike, and connect with users in a responsive interface.
 
 Built during field training at [AsalTech](https://asaltech.com/) under professional mentorship.
 
 **Live Demo:** [https://usersconnect.cloudomair.org/](https://usersconnect.cloudomair.org/)  
 **Docker Hub:** [omairsalman/usersconnect](https://hub.docker.com/r/omairsalman/usersconnect)
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/OmairSalman/UsersConnect/releases)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/omairsalman/usersconnect)](https://hub.docker.com/r/omairsalman/usersconnect)
 [![Docker Image Size](https://img.shields.io/docker/image-size/omairsalman/usersconnect/latest?label=image%20size)](https://hub.docker.com/r/omairsalman/usersconnect)
@@ -20,8 +21,10 @@ Built during field training at [AsalTech](https://asaltech.com/) under professio
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
 - [Getting Started](#-getting-started)
+- [Configuration](#️-configuration)
 - [S3 Image Uploads (Optional)](#️-s3-image-uploads-optional)
 - [Docker Deployment](#-docker-deployment)
+- [First-Time Setup](#-first-time-setup)
 - [Project Structure](#-project-structure)
 - [API Endpoints](#-api-endpoints)
 - [Testing](#-testing)
@@ -37,25 +40,39 @@ Built during field training at [AsalTech](https://asaltech.com/) under professio
 - 🔐 **Secure Authentication** - JWT-based auth with access/refresh token pattern
 - 📝 **Post Management** - Create, edit, and delete posts with rich text content
 - 💬 **Interactive Comments** - Nested comment system with real-time updates
-- 👍 **Social Engagement** - Like posts and comments
+- 👍 **Social Engagement** - Like and dislike posts and comments (separate counters)
 - 👤 **User Profiles** - Customizable profiles with Gravatar integration
 - 🔄 **Real-time Feed** - Paginated feed with latest posts
-- 📊 **Profile Statistics** - Track post likes and comment engagement
+- 📊 **Profile Statistics** - Track post likes/dislikes and comment engagement
+
+### User Management
+- ✉️ **Email Verification** - Optional verification system with 6-digit codes (requires SMTP)
+- 🔑 **Password Reset** - Secure password recovery via email (requires SMTP)
+- ✏️ **Enhanced Profile Editing** - Independent sections for name, email, password, and profile picture
+- 🔒 **Email Privacy** - Toggle email visibility on profile (requires verification)
+- 🖼️ **Custom Profile Pictures** - Upload your own avatar (requires S3 configuration)
 
 ### Optional Features
-- 🖼️ **Image Uploads** - Attach images to posts (requires S3 configuration)
+- 📧 **SMTP Email** - Email verification, password reset, and email change notifications
+  - Gracefully disabled when SMTP is not configured
+  - Users can use the platform immediately without verification
+- 🖼️ **S3 Image Uploads** - Attach images to posts and custom profile pictures
   - Enabled automatically when S3 environment variables are set
   - Supports AWS S3, MinIO, DigitalOcean Spaces, Cloudflare R2, and any S3-compatible storage
-  - 5MB file size limit with automatic validation
+  - 5MB file size limit for profile pictures, 10MB for post images
   - Gracefully disabled when S3 is not configured
+- 🌐 **CORS Support** - Enable API access for separate frontend applications (Angular, React, Vue)
 
 ### Admin Features
 - 🛡️ **Admin Dashboard** - Comprehensive user management
-- 👥 **User Administration** - Edit, promote, or delete users
+- 👥 **User Administration** - Edit names, emails, passwords independently
 - 🔧 **Role Management** - Grant/revoke admin privileges
+- 🎯 **First-Time Setup Wizard** - Guided setup for initial admin account and optional features
 
 ### Technical Features
 - ⚡ **Redis Caching** - Improved performance with intelligent cache invalidation
+- ⚙️ **YAML Configuration** - Centralized config with environment variable overrides
+- 🗄️ **Database Migrations** - Safe schema management with TypeORM migrations
 - 🎨 **Server-Side Rendering** - Fast initial page loads with Handlebars
 - 🔒 **Security Best Practices** - Password hashing, HTTP-only cookies, CSRF protection
 - 📱 **Responsive Design** - Mobile-first Bootstrap 5 interface
@@ -70,13 +87,14 @@ Built during field training at [AsalTech](https://asaltech.com/) under professio
 - **Runtime:** Node.js 18+
 - **Framework:** Express 5
 - **Language:** TypeScript
-- **ORM:** TypeORM
+- **ORM:** TypeORM (with migrations)
 - **Database:** MySQL 8
 - **Cache:** Redis (ioredis)
 - **Authentication:** JWT (jsonwebtoken)
 - **Password Hashing:** bcrypt
 - **File Upload:** Multer
 - **Cloud Storage (Optional):** AWS SDK v3 (S3-compatible)
+- **Email (Optional):** Nodemailer (SMTP)
 
 ### Frontend
 - **Template Engine:** Handlebars (express-handlebars)
@@ -86,7 +104,8 @@ Built during field training at [AsalTech](https://asaltech.com/) under professio
 
 ### DevOps
 - **Containerization:** Docker
-- **Process Manager:** PM2
+- **Configuration:** YAML + Environment Variables
+- **Logging:** Winston (configurable levels)
 - **Testing:** Jest, ts-jest
 - **Build Tool:** TypeScript Compiler
 
@@ -101,6 +120,7 @@ Built during field training at [AsalTech](https://asaltech.com/) under professio
 - Redis 6.0+
 - (Optional) Docker and Docker Compose
 - (Optional) AWS account for S3 or any S3-compatible provider
+- (Optional) SMTP server for email features
 
 ### Installation
 
@@ -122,13 +142,12 @@ Built during field training at [AsalTech](https://asaltech.com/) under professio
 
 4. **Configure environment variables**
    
-   Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory (see `.env.example`):
    ```env
    NODE_ENV=development
-   PORT=3000
    
    # JWT Secrets (use strong random strings)
-   # Generate with: openssl rand -hex 32
+   # Generate with: openssl rand -base64 32
    ACCESS_TOKEN_SECRET=your-access-token-secret-here
    REFRESH_TOKEN_SECRET=your-refresh-token-secret-here
    
@@ -147,6 +166,17 @@ Built during field training at [AsalTech](https://asaltech.com/) under professio
    # S3_SECRET_KEY=
    # S3_BUCKET_NAME=
    # S3_REGION=
+   
+   # Optional: SMTP Configuration
+   # SMTP_HOST=smtp.zoho.com
+   # SMTP_PORT=465
+   # SMTP_SECURE=true
+   # SMTP_USER=noreply@example.com
+   # SMTP_PASSWORD=your_password
+   
+   # Optional: CORS Configuration (for separate frontends)
+   # CORS_ENABLED=true
+   # CORS_ALLOWED_ORIGINS=http://localhost:4200,https://app.example.com
    ```
 
 5. **Run the development server**
@@ -160,18 +190,94 @@ Built during field training at [AsalTech](https://asaltech.com/) under professio
    npm start
    ```
 
-The application will be available at `http://localhost:3000`
+The application will be available at `http://localhost:3000` and automatically redirect to the setup wizard.
+
+---
+
+## ⚙️ Configuration
+
+UsersConnect uses a flexible configuration system with three layers:
+
+**Priority Order:** Defaults → `config.yaml` → Environment Variables
+
+### Configuration Methods
+
+**Option 1: Environment Variables** (current method)
+- Set all variables in `.env` or via Docker environment
+- Takes highest priority
+
+**Option 2: YAML Configuration File** (new in v1.0.0)
+- Create `config.yaml` in the root directory
+- See `config.example.yaml` for all available options
+- Easier for managing multiple settings
+
+**Option 3: Hybrid Approach** (recommended)
+- Set secrets (passwords, tokens) via environment variables
+- Set other configs via `config.yaml`
+- Best of both worlds
+
+### Required Configuration
+
+These **must** be set before the app will start:
+
+```bash
+# Database
+DATABASE_HOST=mysql
+DATABASE_USERNAME=root
+DATABASE_PASSWORD=yourpassword
+DATABASE_NAME=usersconnect
+
+# Redis
+REDIS_HOST=redis
+
+# JWT Secrets
+ACCESS_TOKEN_SECRET=your_secret_here
+REFRESH_TOKEN_SECRET=your_secret_here
+```
+
+### Optional Features Configuration
+
+**S3 Storage** (enables image uploads):
+```yaml
+# config.yaml
+s3:
+  accessKey: YOUR_KEY
+  secretKey: YOUR_SECRET
+  bucketName: usersconnect-media
+  region: us-east-1
+```
+
+**SMTP Email** (enables verification & password reset):
+```yaml
+# config.yaml
+smtp:
+  host: smtp.zoho.com
+  port: 465
+  secure: true
+  user: noreply@example.com
+  password: your_smtp_password
+```
+
+**CORS** (for separate frontend apps):
+```yaml
+# config.yaml
+cors:
+  enabled: true
+  allowedOrigins:
+    - http://localhost:4200
+    - https://app.example.com
+```
 
 ---
 
 ## 🖼️ S3 Image Uploads (Optional)
 
-UsersConnect supports **optional** image uploads in posts using any S3-compatible storage provider. This feature is **automatically enabled** when you configure the S3 environment variables, and **gracefully disabled** when they're not set.
+UsersConnect supports **optional** image uploads in posts and custom profile pictures using any S3-compatible storage provider. This feature is **automatically enabled** when you configure the S3 environment variables or `config.yaml`, and **gracefully disabled** when they're not set.
 
 ### How It Works
 
-- **With S3 configured:** Users see an image upload field when creating/editing posts
-- **Without S3 configured:** Image upload fields are hidden, all other features work normally
+- **With S3 configured:** Users see image upload fields for posts and profile pictures
+- **Without S3 configured:** Upload fields are hidden, all other features work normally, Gravatar used for avatars
 
 ### Supported Providers
 
@@ -184,25 +290,36 @@ UsersConnect supports **optional** image uploads in posts using any S3-compatibl
 
 ### Enabling S3 Storage
 
-Add these environment variables to `.env`:
-
+**Method 1: Environment Variables**
 ```bash
-# S3 Configuration
 S3_ACCESS_KEY=your-access-key
 S3_SECRET_KEY=your-secret-key
 S3_BUCKET_NAME=usersconnect-media
 S3_REGION=us-east-1
 
-# For non-AWS providers, set custom endpoint:
-# S3_ENDPOINT=http://localhost:9000  # MinIO example
-# S3_PUBLIC_URL=https://cdn.example.com  # Optional CDN
+# For non-AWS providers:
+S3_ENDPOINT=http://localhost:9000  # MinIO example
 ```
+
+**Method 2: config.yaml**
+```yaml
+s3:
+  accessKey: your-access-key
+  secretKey: your-secret-key
+  bucketName: usersconnect-media
+  region: us-east-1
+  # endpoint: http://localhost:9000  # For non-AWS
+```
+
+**Method 3: Setup Wizard**
+- During first-time setup, you can configure S3 through the guided wizard
+- Settings are saved to `config.yaml` automatically
 
 **That's it!** The application automatically detects S3 configuration and enables image upload features.
 
 ### Without S3
 
-The application works perfectly without S3 configuration - posts simply won't have image upload capability. All other features remain fully functional.
+The application works perfectly without S3 configuration - posts won't have image upload capability and profile pictures will use Gravatar. All other features remain fully functional.
 
 ---
 
@@ -210,7 +327,9 @@ The application works perfectly without S3 configuration - posts simply won't ha
 
 ### Quick Start with Docker Compose
 
-**Option 1: Basic Deployment (No Images)**
+Choose the deployment option that fits your needs:
+
+**Option 1: Basic Deployment (SSR Only)**
 
 ```yaml
 version: '3.8'
@@ -220,16 +339,18 @@ services:
     image: omairsalman/usersconnect:latest
     ports:
       - "3000:3000"
+    volumes:
+      - ./config.yaml:/app/config.yaml  # Optional config file
+      - ./logs:/logs
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - ACCESS_TOKEN_SECRET=your-access-secret-here
-      - REFRESH_TOKEN_SECRET=your-refresh-secret-here
       - DATABASE_HOST=mysql
       - DATABASE_USERNAME=root
       - DATABASE_PASSWORD=yourpassword
       - DATABASE_NAME=usersconnect
       - REDIS_HOST=redis
+      - ACCESS_TOKEN_SECRET=your-access-secret-here
+      - REFRESH_TOKEN_SECRET=your-refresh-secret-here
     depends_on:
       - mysql
       - redis
@@ -244,6 +365,7 @@ services:
 
   redis:
     image: redis:alpine
+    command: redis-server --requirepass yourredispassword
     volumes:
       - redis_data:/data
 
@@ -252,17 +374,25 @@ volumes:
   redis_data:
 ```
 
-**Option 2: With AWS S3**
+**Option 2: With AWS S3 + SMTP**
 
 Add to app environment:
 ```yaml
+      # S3 Configuration
       - S3_ACCESS_KEY=your-aws-access-key
       - S3_SECRET_KEY=your-aws-secret-key
       - S3_BUCKET_NAME=usersconnect-media
       - S3_REGION=us-east-1
+      
+      # SMTP Configuration
+      - SMTP_HOST=smtp.zoho.com
+      - SMTP_PORT=465
+      - SMTP_SECURE=true
+      - SMTP_USER=noreply@example.com
+      - SMTP_PASSWORD=your_smtp_password
 ```
 
-**Option 3: With Self-hosted MinIO**
+**Option 3: Self-hosted MinIO (Complete Stack)**
 
 ```yaml
 version: '3.8'
@@ -272,22 +402,31 @@ services:
     image: omairsalman/usersconnect:latest
     ports:
       - "3000:3000"
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./logs:/logs
     environment:
       - NODE_ENV=production
-      - PORT=3000
-      - ACCESS_TOKEN_SECRET=your-access-secret-here
-      - REFRESH_TOKEN_SECRET=your-refresh-secret-here
       - DATABASE_HOST=mysql
       - DATABASE_USERNAME=root
       - DATABASE_PASSWORD=yourpassword
       - DATABASE_NAME=usersconnect
       - REDIS_HOST=redis
+      - REDIS_PASSWORD=yourredispassword
+      - ACCESS_TOKEN_SECRET=your-access-secret-here
+      - REFRESH_TOKEN_SECRET=your-refresh-secret-here
       # MinIO Configuration
       - S3_ACCESS_KEY=minioadmin
       - S3_SECRET_KEY=minioadmin
       - S3_BUCKET_NAME=usersconnect-media
       - S3_REGION=us-east-1
       - S3_ENDPOINT=http://minio:9000
+      # SMTP Configuration
+      - SMTP_HOST=smtp.zoho.com
+      - SMTP_PORT=465
+      - SMTP_SECURE=true
+      - SMTP_USER=noreply@example.com
+      - SMTP_PASSWORD=your_smtp_password
     depends_on:
       - mysql
       - redis
@@ -303,6 +442,7 @@ services:
 
   redis:
     image: redis:alpine
+    command: redis-server --requirepass yourredispassword
     volumes:
       - redis_data:/data
 
@@ -337,6 +477,15 @@ volumes:
   minio_data:
 ```
 
+### Port Mapping
+
+The internal application port is **always 3000** (matches `EXPOSE` in Dockerfile). Map to different external ports via Docker:
+
+```bash
+# Run on port 8080 externally
+docker run -p 8080:3000 omairsalman/usersconnect:latest
+```
+
 ### Docker Commands
 
 ```bash
@@ -355,28 +504,64 @@ docker-compose down
 
 ---
 
+## 🎯 First-Time Setup
+
+When you first deploy UsersConnect, you'll be automatically redirected to the **setup wizard** at `/setup`.
+
+### Setup Process
+
+1. **Prerequisites:** Ensure required configuration is set (database, Redis, JWT secrets)
+2. **Start the application:** Visit `http://localhost:3000`
+3. **Automatic redirect:** You'll be redirected to `/setup`
+4. **Setup wizard guides you through:**
+   - **Step 1:** Create your admin account
+   - **Step 2:** (Optional) Configure S3 storage for image uploads
+   - **Step 3:** (Optional) Configure SMTP for email features
+   - **Step 4:** (Optional) Configure CORS for separate frontend apps
+5. **Complete setup:** Click "Complete Setup"
+6. **Configuration saved:** Optional settings are written to `config.yaml`
+7. **Ready to use:** Redirected to login page
+
+### After Setup
+
+- The setup wizard is **permanently disabled** after the first admin is created
+- To add more admins, use the admin panel
+- To reconfigure optional features, edit `config.yaml` or environment variables
+
+---
+
 ## 📁 Project Structure
 
 ```
 usersconnect/
 ├── src/
-│   ├── config/              # Configuration (DB, Redis, types)
+│   ├── config/              # Configuration (DB, Redis, YAML loader)
+│   │   ├── types/           # TypeScript config interfaces
+│   │   ├── dataSource.ts    # TypeORM configuration
+│   │   ├── redis.ts         # Redis client
+│   │   ├── config.loader.ts # YAML config loader
+│   │   └── index.ts         # Config singleton
 │   ├── controllers/         # Request handlers
 │   │   ├── api/            # REST API endpoints
-│   │   └── web/            # Page rendering
+│   │   └── web/            # Page rendering + setup wizard
 │   ├── middlewares/         # Express middlewares
 │   │   ├── auth/           # Authentication checks
-│   │   └── validation/     # Input validation
+│   │   ├── validation/     # Input validation
+│   │   └── setupCheck.ts   # First-time setup redirect
 │   ├── entities/            # TypeORM entities
+│   ├── migrations/          # Database migrations
 │   ├── services/            # Business logic
 │   │   ├── authService.ts
 │   │   ├── postService.ts
 │   │   ├── commentService.ts
 │   │   ├── userService.ts
-│   │   └── s3Service.ts    # S3 upload handling (optional)
+│   │   ├── s3Service.ts    # S3 upload handling (optional)
+│   │   └── emailService.ts # SMTP email (optional)
 │   ├── routers/             # Route definitions
 │   ├── utils/               # Helper functions and DTOs
-│   │   └── s3Config.ts     # S3 configuration checker
+│   │   ├── s3Config.ts     # S3 configuration checker
+│   │   ├── smtpConfig.ts   # SMTP configuration checker
+│   │   └── cacheInvalidation.ts  # Redis cache helpers
 │   ├── views/               # Handlebars templates
 │   │   ├── layouts/
 │   │   ├── pages/
@@ -387,9 +572,11 @@ usersconnect/
 │   │   └── images/
 │   └── tests/               # Jest tests
 ├── dist/                    # Compiled JavaScript
+├── config.yaml              # Optional YAML configuration
+├── config.example.yaml      # Configuration template
+├── .env.example             # Environment variables template
 ├── Dockerfile
-├── docker-compose.yml       # Basic version
-├── docker-compose-s3.yml    # S3-enabled version
+├── docker-compose.yml
 ├── package.json
 └── tsconfig.json
 ```
@@ -421,6 +608,8 @@ usersconnect/
 - `DELETE /posts/:postId` - Delete post
 - `POST /posts/:postId/like` - Like post
 - `DELETE /posts/:postId/like` - Unlike post
+- `POST /posts/:postId/dislike` - Dislike post
+- `DELETE /posts/:postId/dislike` - Undislike post
 
 ### Comments
 - `POST /comments/:postId` - Add comment
@@ -428,13 +617,23 @@ usersconnect/
 - `DELETE /comments/:commentId` - Delete comment
 - `POST /comments/:commentId/like` - Like comment
 - `DELETE /comments/:commentId/like` - Unlike comment
+- `POST /comments/:commentId/dislike` - Dislike comment
+- `DELETE /comments/:commentId/dislike` - Undislike comment
+
+### Email Verification (requires SMTP)
+- `GET /verify-email` - Show verification page
+- `POST /verify-email` - Submit verification code
+- `POST /verify-email/resend` - Resend verification code
 
 ### Web Pages
 - `GET /` - Home page
+- `GET /setup` - First-time setup wizard (if no admin exists)
 - `GET /feed` - User feed (authenticated)
 - `GET /profile` - Current user profile
 - `GET /profile/:userId` - View user profile
+- `GET /edit-profile` - Edit profile page
 - `GET /admin/users` - Admin dashboard (admin)
+- `GET /admin/users/:id/edit` - Edit user (admin)
 
 ---
 
@@ -547,14 +746,26 @@ Complete guide to setting up AWS S3 for image uploads.
 
 ### Step 5: Configure UsersConnect
 
-Add to `.env`:
-
+**Option 1: Environment variables (.env):**
 ```bash
 S3_ACCESS_KEY=AKIA...
 S3_SECRET_KEY=wJal...
 S3_BUCKET_NAME=usersconnect-media
 S3_REGION=us-east-1
 ```
+
+**Option 2: config.yaml:**
+```yaml
+s3:
+  accessKey: AKIA...
+  secretKey: wJal...
+  bucketName: usersconnect-media
+  region: us-east-1
+```
+
+**Option 3: Setup wizard:**
+- Fill in S3 fields during first-time setup
+- Settings saved automatically to `config.yaml`
 
 ### Step 6: Test
 
@@ -594,9 +805,19 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for gu
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+3. Commit changes (`git commit -m 'feat: add amazing feature'`)
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open Pull Request
+
+### Commit Convention
+
+Use conventional commits:
+- `feat:` New features
+- `fix:` Bug fixes
+- `docs:` Documentation changes
+- `refactor:` Code refactoring
+- `test:` Test additions or changes
+- `chore:` Build process or auxiliary tool changes
 
 ---
 
