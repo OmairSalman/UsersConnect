@@ -10,7 +10,7 @@ const authService = new AuthService();
 const isApiRequest = (request: Request) =>
 {
   return request.headers.accept?.includes('application/json');
-};
+}
 
 export default class AuthController
 {

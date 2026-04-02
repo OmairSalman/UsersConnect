@@ -5,15 +5,25 @@ import logger from '../../config/logger';
 
 const commentService = new CommentService();
 
+const isApiRequest = (request: Request) =>
+{
+  return request.headers.accept?.includes('application/json');
+}
+
 export default class CommentController
 {
     async saveComment(request: Request, response: Response)
     {
         const postId = asString(request.params.postId)!;
-        const comment = request.body;
-        const savedComment = await commentService.saveComment(postId, comment, request.user!._id);
+        const commentContent = asString(request.body.content)!;
+
+        const savedComment = await commentService.saveComment(postId, commentContent, request.user!._id);
         
-        response.render('partials/commentCard', { comment: savedComment, currentUser: request.user, currentUserId: request.user!._id, layout: false }, (err, html) => {
+        if (isApiRequest(request))
+        {
+            return response.status(200).json({ message: 'Comment created successfully', comment: savedComment });
+        }
+        else response.render('partials/commentCard', { comment: savedComment, currentUser: request.user, currentUserId: request.user!._id, layout: false }, (err, html) => {
             if (err)
             {
                 logger.error(err);
@@ -26,8 +36,8 @@ export default class CommentController
     async updateComment(request: Request, response: Response)
     {
         let commentId = asString(request.params.commentId)!;
-        const comment = request.body;
-        const updatedComment = await commentService.updateComment(commentId, comment);
+        const commentContent = asString(request.body.content)!;
+        const updatedComment = await commentService.updateComment(commentId, commentContent);
         if(!updatedComment) return response.status(404).send("Comment not found");
         return response.status(200).json({message: "Comment update successfully", comment: updatedComment});
     }

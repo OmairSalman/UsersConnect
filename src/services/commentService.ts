@@ -10,12 +10,12 @@ import { config } from '../config';
 
 export default class CommentService
 {
-    async saveComment(postId: string, newComment: Comment, authorId: string): Promise<PublicComment | null>
+    async saveComment(postId: string, commentContent: string, authorId: string): Promise<PublicComment | null>
     {
         try
         {
             const insertResult = await Comment.insert({
-                content: newComment.content,
+                content: commentContent,
                 post_id: postId,
                 author_id: authorId
             });
@@ -69,11 +69,11 @@ export default class CommentService
         }
     }
 
-    async updateComment(commentId: string, updatedComment: Comment): Promise<PublicComment | null>
+    async updateComment(commentId: string, commentContent: string): Promise<PublicComment | null>
     {
         try
         {
-            await Comment.update({_id: commentId}, updatedComment);
+            await Comment.update({_id: commentId}, {content: commentContent});
             const comment = await Comment.findOne(
                 {
                     where: {_id: commentId},
