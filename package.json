@@ -1,6 +1,6 @@
 {
   "name": "usersconnect",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Server-Side Rendered Node.js/TypeScript website developed during a backend development internship",
   "main": "index.js",
   "scripts": {
