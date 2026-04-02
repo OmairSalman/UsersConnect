@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 02-04-2026
+
+### Fixed
+- **Comment API Support** - Comments can now be posted via API requests (for separate frontend applications)
+- **Comment Service** - Now accepts `commentContent` string instead of raw Comment object, preventing accidental field injection
+- **Comment Controller** - Destructures `request.body.content` explicitly; adds `isApiRequest` check to return JSON instead of rendered HTML for API clients
+- **Comment Validation** - Validates `request.body.content` directly instead of entire body object
+
+### Security
+- Updated npm dependencies to resolve **9 vulnerabilities** (1 critical, 6 high, 1 moderate, 1 low)
+- **handlebars** → 4.7.9 (critical): Fixed JS injection via AST type confusion, prototype pollution leading to XSS, property access validation bypass, and DoS via malformed decorator syntax
+- **fast-xml-parser** → 5.5.8 (high): Fixed numeric entity expansion bypassing entity expansion limits
+- **lodash** → 4.18.1 (high): Fixed code injection via _.template and prototype pollution
+- **path-to-regexp** → 8.4.2 (high): Fixed ReDoS via sequential optional groups and multiple wildcards
+- **picomatch** → 2.3.2 / 4.0.4 (high): Fixed method injection in POSIX character classes and ReDoS
+- **brace-expansion** → 1.1.13 / 2.0.3 (moderate): Fixed zero-step sequence causing process hang
+- **nodemailer** → 8.0.4 (low): Fixed SMTP command injection via unsanitized envelope.size parameter
+
 ## [1.0.2] - 04-03-2026
 
 ### Security
