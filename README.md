@@ -4,7 +4,7 @@ A modern full-stack social media platform built with Node.js, Express, and TypeS
 
 Initially built during summer field training at [AsalTech](https://asaltech.com/) under professional mentorship, with continued development thereafter.
 
-**Live Demo:** [https://usersconnect.cloudomair.org/](https://usersconnect.cloudomair.org/)  
+**Live Version:** [https://usersconnect.cloudomair.org/](https://usersconnect.cloudomair.org/)  
 **Docker Hub:** [omairsalman/usersconnect](https://hub.docker.com/r/omairsalman/usersconnect)
 
 [![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)](https://github.com/OmairSalman/UsersConnect/releases)
