@@ -67,7 +67,7 @@ export async function isAuthenticated(request: Request, response: Response, next
     response.cookie("accessToken", newAccessToken, {
       httpOnly: true,
       secure: config.app.nodeEnv === "production",
-      sameSite: "lax",
+      sameSite: "none",
       maxAge: 1000 * 60 * 15
     });
 

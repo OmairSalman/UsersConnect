@@ -96,14 +96,14 @@ export default class UserController
                 response.clearCookie("accessToken", {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     path: "/",
                 });
 
                 response.clearCookie("refreshToken", {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     path: "/",
                 });
 
@@ -127,14 +127,14 @@ export default class UserController
                 response.cookie("accessToken", accessToken, {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     maxAge: 1000 * 60 * 15
                 });
 
                 response.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });
             }
@@ -212,14 +212,14 @@ export default class UserController
                 response.clearCookie("accessToken", {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     path: "/",
                 });
 
                 response.clearCookie("refreshToken", {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     path: "/",
                 });
 
@@ -243,14 +243,14 @@ export default class UserController
                 response.cookie("accessToken", accessToken, {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     maxAge: 1000 * 60 * 15
                 });
 
                 response.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });
             }
@@ -288,14 +288,14 @@ export default class UserController
                 response.clearCookie("accessToken", {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     path: "/",
                 });
 
                 response.clearCookie("refreshToken", {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     path: "/",
                 });
 
@@ -319,14 +319,14 @@ export default class UserController
                 response.cookie("accessToken", accessToken, {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     maxAge: 1000 * 60 * 15
                 });
 
                 response.cookie("refreshToken", refreshToken, {
                     httpOnly: true,
                     secure: config.app.nodeEnv === "production",
-                    sameSite: "lax",
+                    sameSite: "none",
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });
             }

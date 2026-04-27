@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 27-04-2026
+
+### Changed
+- **Cookie Configuration for Mobile Apps** - Changed `sameSite` from `lax` to `none` across all authentication operations to support cross-site requests from mobile applications
+- **README** - Updated version badge to 1.0.4
+
+### Fixed
+- **npm Dependency Resolution** - Added npm overrides to prevent TypeORM/uuid version cycling during `npm audit fix --force`
+
+### Security
+- **TypeORM** → 0.3.28: Fixed SQL injection vulnerabilities (GHSA-fx4w-v43j-vc45, GHSA-q2pj-6v73-8rgj)
+- **uuid** → 14.0.0: Fixed buffer bounds check in v3/v5/v6 when buf is provided (GHSA-w5hq-g745-h8pq)
+- **npm overrides** added to package.json to enforce secure versions and prevent dependency resolution conflicts
+
+### Technical Details
+- Modified cookie settings in:
+  - `src/controllers/api/authController.ts` (login, register, logout)
+  - `src/controllers/api/userController.ts` (password change, email change)
+  - `src/controllers/web/webController.ts` (token refresh)
+  - `src/middlewares/auth/isAuthenticated.ts` (token refresh)
+- Added `overrides` section to package.json: `{"uuid": "^14.0.0", "typeorm": "^0.3.28"}`
+
 ## [1.0.3] - 02-04-2026
 
 ### Fixed

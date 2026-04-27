@@ -294,7 +294,7 @@ async function getUserFromToken(request: Request, response: Response)
         {
             httpOnly: true,
             secure: config.app.nodeEnv === "production",
-            sameSite: "lax",
+            sameSite: "none",
             maxAge: 1000 * 60 * 15
         });
         return payload;

@@ -1,6 +1,6 @@
 {
   "name": "usersconnect",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Server-Side Rendered Node.js/TypeScript website developed during a backend development internship",
   "main": "index.js",
   "scripts": {
@@ -43,7 +43,7 @@
     "nodemailer": "^8.0.1",
     "redis": "^5.8.2",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.26",
+    "typeorm": "^0.3.28",
     "winston": "^3.19.0"
   },
   "devDependencies": {
@@ -69,5 +69,9 @@
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "uuid": "^14.0.0",
+    "typeorm": "^0.3.28"
   }
 }
