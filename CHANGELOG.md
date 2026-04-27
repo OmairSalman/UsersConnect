@@ -122,6 +122,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Navigation hyperlinks
 - Post/comment edit mode
 
+[1.0.4]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.3...v1.0.4
+[1.0.3]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.2...v1.0.3
+[1.0.2]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.1...v1.0.2
+[1.0.1]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.0-rc.2...v1.0.0
 [1.0.0-rc.2]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/OmairSalman/UsersConnect/releases/tag/v1.0.0-rc.1
