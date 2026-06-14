@@ -7,7 +7,7 @@ Initially built during summer field training at [AsalTech](https://asaltech.com/
 **Live Version:** [https://usersconnect.cloudomair.org/](https://usersconnect.cloudomair.org/)  
 **Docker Hub:** [omairsalman/usersconnect](https://hub.docker.com/r/omairsalman/usersconnect)
 
-[![Version](https://img.shields.io/badge/version-1.0.4-blue.svg)](https://github.com/OmairSalman/UsersConnect/releases)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/OmairSalman/UsersConnect/releases)
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 [![Docker Pulls](https://img.shields.io/docker/pulls/omairsalman/usersconnect)](https://hub.docker.com/r/omairsalman/usersconnect)
 [![Docker Image Size](https://img.shields.io/docker/image-size/omairsalman/usersconnect/latest?label=image%20size)](https://hub.docker.com/r/omairsalman/usersconnect)
@@ -21,6 +21,7 @@ Initially built during summer field training at [AsalTech](https://asaltech.com/
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
 - [Getting Started](#-getting-started)
+- [Why HTTPS is Required](#why-https-is-required)
 - [Configuration](#️-configuration)
 - [S3 Image Uploads (Optional)](#️-s3-image-uploads-optional)
 - [Docker Deployment](#-docker-deployment)
@@ -184,6 +185,8 @@ Initially built during summer field training at [AsalTech](https://asaltech.com/
    npm run dev
    ```
 
+   > **⚠️ HTTPS note:** Auth cookies use `Secure` + `SameSite=None`, so the browser only accepts them in a secure context. `http://localhost` qualifies in Chrome and Firefox (dev works out of the box), but testing from a phone over a LAN IP — or using Safari — requires real HTTPS. See [Why HTTPS is required](#why-https-is-required).
+
 6. **Build for production**
    ```bash
    npm run build
@@ -191,6 +194,27 @@ Initially built during summer field training at [AsalTech](https://asaltech.com/
    ```
 
 The application will be available at `http://localhost:3000` and automatically redirect to the setup wizard.
+
+---
+
+## Why HTTPS is required
+
+UsersConnect sets its authentication cookies (the access and refresh tokens, plus the password-reset and email-change session cookies) with the **`Secure`** and **`SameSite=None`** attributes. `SameSite=None` is what lets those cookies travel from mobile apps and other cross-site/cross-origin clients — but browsers only accept a `Secure` cookie over a **secure context**. Over a plain, non-secure connection the browser silently drops them, so sign-in, registration, and password reset appear to "do nothing."
+
+**In production this is a non-issue.** The app runs HTTP behind a TLS-terminating reverse proxy, so end users are always on `https://`. The app itself only ever sees HTTP — which is exactly why the insecure-context check is done in the browser via `window.isSecureContext`, never on the server (a server-side check would wrongly flag every production request as insecure).
+
+**For local development**, whether the origin is a secure context depends on the host:
+
+| Origin | Secure context? |
+| --- | --- |
+| `https://…` (any host) | ✅ Yes |
+| `http://localhost`, `http://127.0.0.1` | ✅ Yes (Chrome & Firefox) |
+| `http://<LAN-IP>` (e.g. `http://192.168.1.20` from a phone) | ❌ No |
+| Safari over plain `http://` (incl. `localhost`) | ❌ No |
+
+So `npm run dev` on `http://localhost` works out of the box in Chrome and Firefox. You only need real TLS when testing from another device (a phone or tablet over your LAN) or in Safari. For that, serve the app over HTTPS using a TLS-terminating proxy — for example, generate a locally-trusted certificate with [mkcert](https://github.com/FiloSottile/mkcert) and front the app with a local HTTPS reverse proxy, or expose it through a tunnel (such as ngrok or Cloudflare Tunnel) that provides an `https://` URL.
+
+The login, register, and password-reset pages detect a non-secure context client-side and — instead of failing silently — disable the form and show a banner linking back to this section.
 
 ---
 
@@ -341,7 +365,7 @@ services:
       - "3000:3000"
     volumes:
       - ./config.yaml:/app/config.yaml  # Optional config file
-      - ./logs:/logs
+      - ./logs:/app/logs
     environment:
       - NODE_ENV=production
       - DATABASE_HOST=mysql
@@ -404,7 +428,7 @@ services:
       - "3000:3000"
     volumes:
       - ./config.yaml:/app/config.yaml
-      - ./logs:/logs
+      - ./logs:/app/logs
     environment:
       - NODE_ENV=production
       - DATABASE_HOST=mysql

@@ -293,7 +293,7 @@ async function getUserFromToken(request: Request, response: Response)
         response.cookie("accessToken", newAccessToken,
         {
             httpOnly: true,
-            secure: config.app.nodeEnv === "production",
+            secure: true,
             sameSite: "none",
             maxAge: 1000 * 60 * 15
         });

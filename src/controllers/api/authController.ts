@@ -49,14 +49,14 @@ export default class AuthController
 
             response.cookie("accessToken", accessToken, {
                 httpOnly: true,
-                secure: config.app.nodeEnv === "production",
+                secure: true,
                 sameSite: "none",
                 maxAge: 1000 * 60 * 15
             });
 
             response.cookie("refreshToken", refreshToken, {
                 httpOnly: true,
-                secure: config.app.nodeEnv === "production",
+                secure: true,
                 sameSite: "none",
                 maxAge: 1000 * 60 * 60 * 24 * 30
             });
@@ -130,14 +130,14 @@ export default class AuthController
 
         response.cookie("accessToken", accessToken, {
             httpOnly: true,
-            secure: config.app.nodeEnv === "production",
+            secure: true,
             sameSite: "none",
             maxAge: 1000 * 60 * 15
         });
 
         response.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: config.app.nodeEnv === "production",
+            secure: true,
             sameSite: "none",
             maxAge: 1000 * 60 * 60 * 24 * 30
         });
@@ -153,14 +153,14 @@ export default class AuthController
     {
         response.clearCookie("accessToken", {
             httpOnly: true,
-            secure: config.app.nodeEnv === "production",
+            secure: true,
             sameSite: "none",
             path: "/",
         });
 
         response.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: config.app.nodeEnv === "production",
+            secure: true,
             sameSite: "none",
             path: "/",
         });
@@ -199,8 +199,8 @@ export default class AuthController
         {
             response.cookie('resetEmail', email, {
                 httpOnly: true,
-                secure: config.app.nodeEnv === "production",
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 maxAge: 10 * 60 * 1000 // 10 minutes
             });
             // Always return success to prevent email enumeration
@@ -246,8 +246,8 @@ export default class AuthController
             // Set session cookie
             response.cookie('resetSessionToken', sessionToken, {
                 httpOnly: true,
-                secure: config.app.nodeEnv === "production",
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 maxAge: 5 * 60 * 1000 // 5 minutes
             });
 
@@ -340,15 +340,15 @@ export default class AuthController
             // Clear session cookie
             response.clearCookie('resetSessionToken', {
                 httpOnly: true,
-                secure: config.app.nodeEnv === "production",
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 path: '/'
             });
 
             response.clearCookie('resetEmail', {
                 httpOnly: true,
-                secure: config.app.nodeEnv === "production",
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 path: '/'
             });
 
@@ -428,15 +428,15 @@ export default class AuthController
             if (user) {
                 response.clearCookie('accessToken', {
                     httpOnly: true,
-                    secure: config.app.nodeEnv === "production",
-                    sameSite: 'lax',
+                    secure: true,
+                    sameSite: 'none',
                     path: '/'
                 });
                 
                 response.clearCookie('refreshToken', {
                     httpOnly: true,
-                    secure: config.app.nodeEnv === "production",
-                    sameSite: 'lax',
+                    secure: true,
+                    sameSite: 'none',
                     path: '/'
                 });
                 
@@ -459,15 +459,15 @@ export default class AuthController
                 
                 response.cookie('accessToken', accessToken, {
                     httpOnly: true,
-                    secure: config.app.nodeEnv === "production",
-                    sameSite: 'lax',
+                    secure: true,
+                    sameSite: 'none',
                     maxAge: 1000 * 60 * 15
                 });
                 
                 response.cookie('refreshToken', refreshToken, {
                     httpOnly: true,
-                    secure: config.app.nodeEnv === "production",
-                    sameSite: 'lax',
+                    secure: true,
+                    sameSite: 'none',
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });
             }
@@ -518,8 +518,8 @@ export default class AuthController
             // Set HttpOnly cookie with temp token
             response.cookie('emailChangeSession', result.tempToken, {
                 httpOnly: true,
-                secure: config.app.nodeEnv === "production",
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 maxAge: 1000 * 60 * 5 // 5 minutes
             });
             
@@ -587,8 +587,8 @@ export default class AuthController
             // Clear the temp session cookie
             response.clearCookie('emailChangeSession', {
                 httpOnly: true,
-                secure: config.app.nodeEnv === "production",
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 path: '/'
             });
             
@@ -598,15 +598,15 @@ export default class AuthController
             {
                 response.clearCookie('accessToken', {
                     httpOnly: true,
-                    secure: config.app.nodeEnv === "production",
-                    sameSite: 'lax',
+                    secure: true,
+                    sameSite: 'none',
                     path: '/'
                 });
                 
                 response.clearCookie('refreshToken', {
                     httpOnly: true,
-                    secure: config.app.nodeEnv === "production",
-                    sameSite: 'lax',
+                    secure: true,
+                    sameSite: 'none',
                     path: '/'
                 });
                 
@@ -629,15 +629,15 @@ export default class AuthController
                 
                 response.cookie('accessToken', accessToken, {
                     httpOnly: true,
-                    secure: config.app.nodeEnv === "production",
-                    sameSite: 'lax',
+                    secure: true,
+                    sameSite: 'none',
                     maxAge: 1000 * 60 * 15
                 });
                 
                 response.cookie('refreshToken', refreshToken, {
                     httpOnly: true,
-                    secure: config.app.nodeEnv === "production",
-                    sameSite: 'lax',
+                    secure: true,
+                    sameSite: 'none',
                     maxAge: 1000 * 60 * 60 * 24 * 30
                 });
             }

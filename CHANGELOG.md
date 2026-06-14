@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 14-06-2026
+
+> Note: cross-site cookie support for mobile clients partially landed in 1.0.4; this release extends `sameSite:none` consistently across all authentication flows.
+
+### Added
+- **Insecure-context guard on auth pages** - The login, register, and password-reset pages now detect an insecure (non-HTTPS) context via `window.isSecureContext` and disable submission with an explanatory banner instead of failing silently when the `Secure` cookies are rejected by the browser
+
+### Changed
+- **`secure` cookie flag now unconditional** - All authentication cookies are set/cleared with `secure: true` regardless of `NODE_ENV`, because `SameSite=None` requires the `Secure` attribute
+- **Dependency cleanup** - Removed unused/duplicate packages: `ejs`, `express-session`, `@types/connect-mongo`, `redis`, `mariadb`, and `hbs` (with their associated `@types/*`); the app uses `ioredis`, `mysql2`, and `express-handlebars`
+- **`handlebars` declared as a direct dependency** - Previously only transitive, but imported directly in `src/services/emailService.ts`; pinned to the version already resolved under `express-handlebars`
+- **Logger honors the config system** - `logging.directory`, `logging.maxFileSize`, and `logging.maxFiles` are now applied via a `configureLogger()` factory (no circular dependency on the config singleton). A relative log directory resolves under the app working directory (`/app/logs` in Docker); an absolute path is honored verbatim
+- **Database connection retries honor config** - `connectWithRetry` now uses `database.connectionRetries` and `database.retryDelay` instead of hardcoded values
+- **Removed stale internship-era test files** - Cleared `src/tests/` of outdated tests; Jest infrastructure is retained (`passWithNoTests` enabled) for future real tests
+- **Documentation & docker-compose examples** - Corrected the log mount path (`./logs:/app/logs`), added a `config.yaml` mount and a named `logs` volume, added an optional CORS environment block, and removed the ignored `PORT` environment variable
+
+### Fixed
+- **`sameSite:none` applied consistently across all auth cookies** - Password reset, reset-session, email verification, and email-change flows now use `sameSite: 'none'` everywhere (several previously used `'lax'`)
+- **Post-email-verification token downgrade** - The access/refresh tokens re-issued after email verification (and email change) were incorrectly downgraded to `sameSite: 'lax'`, breaking cross-site auth right after verifying; they now remain `sameSite: 'none'`
+- **Documentation corrections** - `CONTRIBUTING.md` project structure (`models/` → `entities/`) and the migration command example aligned with the actual npm scripts
+
+### Security
+- Resolved **3 npm audit vulnerabilities** (1 high, 2 moderate) via non-breaking `npm audit fix` (no `--force` required)
+- **fast-xml-builder** 1.1.5 → 1.2.0 (high): Fixed attribute values with unwanted quotes bypassing malicious/unwanted attribute filtering (GHSA-5wm8-gmm8-39j9) and comment-value regex bypass (GHSA-45c6-75p6-83cc)
+- **qs** 6.15.1 → 6.15.2 (moderate): Fixed remotely triggerable DoS where `qs.stringify` crashes with a TypeError on null/undefined entries in comma-format arrays when `encodeValuesOnly` is set (GHSA-q8mj-m7cp-5q26)
+- **brace-expansion** 5.0.5 → 5.0.6 (moderate, transitive via nodemon): Fixed large numeric range defeating the documented `max` DoS protection (GHSA-jxxr-4gwj-5jf2)
+
 ## [1.0.4] - 27-04-2026
 
 ### Changed
@@ -122,6 +149,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Navigation hyperlinks
 - Post/comment edit mode
 
+[1.1.0]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.4...v1.1.0
 [1.0.4]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.3...v1.0.4
 [1.0.3]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.2...v1.0.3
 [1.0.2]: https://github.com/OmairSalman/UsersConnect/compare/v1.0.1...v1.0.2

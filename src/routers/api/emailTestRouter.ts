@@ -1,3 +1,4 @@
+// TODO (deferred): retained for the planned admin deployment-settings UI (runtime config editing + SMTP connectivity test). Not currently mounted. Do not remove.
 import { Router } from 'express';
 import EmailTestController from '../../controllers/api/emailTestController';
 import { isAuthenticated } from '../../middlewares/auth/isAuthenticated';

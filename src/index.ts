@@ -78,8 +78,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Database connection with retry logic
-async function connectWithRetry(retries = 10, delay = 5000): Promise<void> {
+// Database connection with retry logic.
+// Retry count and delay are honored from the config system (connectionRetries / retryDelay).
+async function connectWithRetry(
+  retries = config.database.connectionRetries,
+  delay = config.database.retryDelay
+): Promise<void> {
   for (let i = 0; i < retries; i++) {
     try {
       await AppDataSource.initialize();

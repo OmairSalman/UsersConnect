@@ -86,7 +86,7 @@ src/
 ├── middlewares/     # Express middlewares
 │   ├── auth/       # Authentication checks
 │   └── validation/ # Input validation
-├── models/          # TypeORM entities
+├── entities/        # TypeORM entities
 ├── services/        # Business logic
 ├── routers/         # Route definitions
 ├── utils/           # Helper functions
@@ -249,7 +249,7 @@ When making changes to the database schema:
 4. Update the relevant model entities
 
 ```bash
-npm run typeorm migration:create -- -n YourMigrationName
+npm run migration:create -- src/migrations/YourMigrationName
 ```
 
 ## Documentation

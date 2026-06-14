@@ -9,9 +9,11 @@ services:
     image: omairsalman/usersconnect:latest
     ports:
       - "3000:3000"
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - logs:/app/logs
     environment:
       - NODE_ENV=production
-      - PORT=3000
       # Generate secrets with: openssl rand -hex 32
       - ACCESS_TOKEN_SECRET=change-this-to-random-secret-min-32-chars
       - REFRESH_TOKEN_SECRET=change-this-to-random-secret-min-32-chars
@@ -21,6 +23,16 @@ services:
       - DATABASE_NAME=usersconnect
       - REDIS_HOST=redis
       - REDIS_PASSWORD=
+
+      # ===========================================
+      # CORS (optional — for a separate Angular/React frontend)
+      # Uncomment and set when the API is consumed by a separate frontend.
+      # ===========================================
+      # - CORS_ENABLED=true
+      # - CORS_ALLOWED_ORIGINS=http://localhost:4200,https://app.example.com
+      # - CORS_ALLOW_CREDENTIALS=true
+      # - CORS_ALLOWED_METHODS=GET,POST,PUT,DELETE,OPTIONS
+      # - CORS_ALLOWED_HEADERS=Content-Type,Authorization,Accept
 
       # ===========================================
       # S3 CONFIGURATION - Choose One Provider
@@ -114,6 +126,7 @@ services:
 volumes:
   mysql_data:
   redis_data:
+  logs:
   # Uncomment this if using MinIO:
   # minio_data:
 

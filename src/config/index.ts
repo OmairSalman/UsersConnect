@@ -1,5 +1,5 @@
 import { loadConfig } from './config.loader';
-import logger from './logger';
+import { configureLogger } from './logger';
 import 'dotenv/config';
 
 /**
@@ -8,9 +8,10 @@ import 'dotenv/config';
  */
 export const config = loadConfig();
 
-// Update the winston logger's level to match the loaded config.
-// logger.ts initialises with process.env.LOG_LEVEL at module load time;
-// this corrects it after config has been resolved from all sources.
-logger.level = config.logging.level;
+// Apply the resolved logging configuration to the singleton logger.
+// logger.ts initialises with the Console transport only at module load time;
+// this wires up the level, log directory, and File transports now that
+// config has been resolved from all sources (defaults, config.yaml, env vars).
+configureLogger(config.logging);
 
 export * from './types/config.types';

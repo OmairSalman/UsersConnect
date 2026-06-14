@@ -1,3 +1,4 @@
+// TODO (deferred): retained for the planned admin deployment-settings UI (runtime config editing + SMTP connectivity test). Not currently mounted. Do not remove.
 import { Request, Response } from 'express';
 import { EmailService } from '../../services/emailService';
 import logger from '../../config/logger';

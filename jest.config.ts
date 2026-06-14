@@ -106,6 +106,10 @@ const config: Config = {
   // A preset that is used as a base for Jest's configuration
   preset: 'ts-jest',
 
+  // Don't fail the run when no test files are present (test suite intentionally
+  // emptied of stale internship-era tests; kept green for future real tests).
+  passWithNoTests: true,
+
   // Run tests from one or more projects
   // projects: undefined,
 

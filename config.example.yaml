@@ -119,6 +119,8 @@ cors:
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging:
   level: info           # error | warn | info | debug  — env: LOG_LEVEL
-  directory: /logs      # Absolute path recommended for production
+  # A RELATIVE path resolves under the app working directory (/app/logs in Docker).
+  # An ABSOLUTE path (e.g. /var/log/usersconnect) is honored as-is.
+  directory: logs       # default: logs (→ /app/logs in Docker)
   maxFileSize: 10485760 # 10 MB per log file before rotation
   maxFiles: 5           # Number of rotated files to retain

@@ -62,7 +62,7 @@ const defaultConfig: Partial<AppConfig> = {
 
   logging: {
     level: 'info',
-    directory: '/logs',
+    directory: 'logs', // relative → resolves under the app working dir (/app/logs in Docker)
     maxFileSize: 10 * 1024 * 1024, // 10 MB
     maxFiles: 5,
   },
